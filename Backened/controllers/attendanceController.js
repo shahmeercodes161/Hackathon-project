@@ -16,7 +16,10 @@ export const checkIn = async (req, res) => {
     }
 
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
+    // Use PKT (UTC+5) for date string so attendance date matches Pakistan local date
+    const pktOffset = 5 * 60 * 60 * 1000;
+    const pktNow = new Date(now.getTime() + pktOffset);
+    const dateStr = pktNow.toISOString().split('T')[0];
 
     // Check if already checked in today -> 409 Conflict as specified in brief
     const existing = await Attendance.findOne({ employeeId, date: dateStr });
@@ -132,7 +135,9 @@ export const checkOut = async (req, res) => {
     }
 
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
+    const pktOffset = 5 * 60 * 60 * 1000;
+    const pktNow = new Date(now.getTime() + pktOffset);
+    const dateStr = pktNow.toISOString().split('T')[0];
 
     const attendance = await Attendance.findOne({ employeeId, date: dateStr });
     if (!attendance) {
@@ -178,7 +183,8 @@ export const getTodayStatus = async (req, res) => {
       return res.json({ success: true, attendance: null, message: 'Admin account has no direct attendance card' });
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const pktOffset = 5 * 60 * 60 * 1000;
+    const todayStr = new Date(Date.now() + pktOffset).toISOString().split('T')[0];
     const attendance = await Attendance.findOne({ employeeId, date: todayStr }).lean();
 
     res.json({ success: true, attendance: attendance || null, today: todayStr });
@@ -193,7 +199,8 @@ export const getTodayStatus = async (req, res) => {
  */
 export const getDailyBoard = async (req, res) => {
   try {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const pktOffset = 5 * 60 * 60 * 1000;
+    const todayStr = new Date(Date.now() + pktOffset).toISOString().split('T')[0];
     const { date = todayStr, department } = req.query;
 
     const empFilter = { status: { $in: ['active', 'probation'] } };
