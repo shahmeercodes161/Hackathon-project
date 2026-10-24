@@ -148,14 +148,15 @@ export default function Leaves() {
 
   return (
     <div className="leaves-container">
-      {/* Header */}
-      <div className="leaves-header">
+      {/* Page Header (Figma Screen 03) */}
+      <div className="figma-page-header">
         <div>
-          <h1>Leave Management & Smart NLP</h1>
-          <p>
-            Working days only (skips weekends and registered public holidays). Strict 422 balance & overlap guards.
-          </p>
+          <h1 className="figma-page-title">Leave management</h1>
+          <p className="figma-page-subtitle">Review requests and keep leave decisions in one place.</p>
         </div>
+        <Link to="/org-setup" className="figma-btn-white-outline">
+          Leave policy settings
+        </Link>
       </div>
 
       {alert.text && (
@@ -164,80 +165,131 @@ export default function Leaves() {
         </div>
       )}
 
-      {/* Quotas & Balances Row */}
-      <div className="leave-balance-grid">
-        <div className="balance-card">
-          <span className="balance-label">Annual Vacation</span>
-          <span className="balance-value">{balances.Annual?.remaining ?? 14}</span>
-          <small>Quota: 14 days &bull; Used: {balances.Annual?.used ?? 0}</small>
+      {/* 3 Metric Cards (Figma Screen 03) */}
+      <div className="figma-metrics-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: '1.5rem' }}>
+        <div className="figma-metric-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span className="metric-label" style={{ fontSize: '0.86rem', color: '#64748b' }}>Pending</span>
+            <span style={{ fontSize: '0.66rem', fontWeight: 700, padding: '2px 6px', background: '#fef3c7', color: '#b45309', borderRadius: '4px' }}>
+              LIVE COUNT
+            </span>
+          </div>
+          <div className="metric-value" style={{ margin: 0, fontSize: '2rem' }}>
+            {pendingLeaves.length}
+          </div>
         </div>
-        <div className="balance-card">
-          <span className="balance-label">Sick Leave</span>
-          <span className="balance-value">{balances.Sick?.remaining ?? 8}</span>
-          <small>Quota: 8 days &bull; Used: {balances.Sick?.used ?? 0}</small>
+
+        <div className="figma-metric-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span className="metric-label" style={{ fontSize: '0.86rem', color: '#64748b' }}>Approved</span>
+            <span style={{ fontSize: '0.66rem', fontWeight: 700, padding: '2px 6px', background: '#d1fae5', color: '#047857', borderRadius: '4px' }}>
+              LIVE COUNT
+            </span>
+          </div>
+          <div className="metric-value" style={{ margin: 0, fontSize: '2rem' }}>
+            {myLeaves.filter(l => l.status === 'approved').length}
+          </div>
         </div>
-        <div className="balance-card">
-          <span className="balance-label">Casual Leave</span>
-          <span className="balance-value">{balances.Casual?.remaining ?? 10}</span>
-          <small>Quota: 10 days &bull; Used: {balances.Casual?.used ?? 0}</small>
-        </div>
-        <div className="balance-card">
-          <span className="balance-label">Unpaid Leave</span>
-          <span className="balance-value">Unlimited</span>
-          <small>Taken: {balances.Unpaid?.used ?? 0} days</small>
+
+        <div className="figma-metric-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span className="metric-label" style={{ fontSize: '0.86rem', color: '#64748b' }}>Rejected</span>
+            <span style={{ fontSize: '0.66rem', fontWeight: 700, padding: '2px 6px', background: '#ffe4e6', color: '#be123c', borderRadius: '4px' }}>
+              LIVE COUNT
+            </span>
+          </div>
+          <div className="metric-value" style={{ margin: 0, fontSize: '2rem' }}>
+            {myLeaves.filter(l => l.status === 'rejected').length}
+          </div>
         </div>
       </div>
 
-      {/* HR Pending Inbox (if Admin or HR) */}
-      {(role === 'admin' || role === 'hr') && (
-        <div className="leave-section-card">
-          <div className="section-title-flex">
-            <h3>HR Approval Inbox (Pending Requests)</h3>
-            <span className="inbox-badge">{pendingLeaves.length} Pending</span>
+      {/* Main Leave Requests Card (Figma Screen 03) */}
+      <div className="figma-white-card" style={{ marginBottom: '1.75rem', padding: '1.75rem' }}>
+        <div className="card-header-clean">
+          <div>
+            <h3 className="card-title">Leave requests</h3>
+            <p className="card-subtitle">Review employee leave submissions and record decisions.</p>
           </div>
-
-          {pendingLeaves.length === 0 ? (
-            <p className="empty-sub">No pending leave requests requiring review.</p>
-          ) : (
-            <div className="pending-leaves-grid">
-              {pendingLeaves.map((l) => (
-                <div key={l._id} className="pending-leave-card">
-                  <div className="pending-card-top">
-                    <div>
-                      <span className="emp-name-tag">{l.employeeId?.fullName} ({l.employeeId?.department})</span>
-                      <h4 className="leave-type-head">{l.leaveType} Leave &bull; {l.workingDaysCount} Working Day(s)</h4>
-                    </div>
-                    <span className="pending-pill">Pending HR Review</span>
-                  </div>
-
-                  <p className="leave-date-range">
-                    📅 From <strong>{l.startDate}</strong> to <strong>{l.endDate}</strong>
-                  </p>
-                  <p className="leave-reason-text">&ldquo;{l.reason}&rdquo;</p>
-
-                  <div className="review-action-row">
-                    <input
-                      type="text"
-                      placeholder="Optional HR comment..."
-                      value={reviewComment[l._id] || ''}
-                      onChange={(e) => setReviewComment({ ...reviewComment, [l._id]: e.target.value })}
-                      className="comment-input"
-                    />
-                    <div className="review-btn-group">
-                      <button className="reject-btn" onClick={() => handleReview(l._id, 'reject')}>
-                        <X size={14} /> Reject
-                      </button>
-                      <button className="approve-btn" onClick={() => handleReview(l._id, 'approve')}>
-                        <Check size={14} /> Approve
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
-      )}
+
+        {/* Tab Filters */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
+          <button className="figma-btn-purple" style={{ padding: '0.4rem 1rem', fontSize: '0.82rem' }}>
+            Pending
+          </button>
+          <button className="figma-btn-white-outline" style={{ padding: '0.4rem 1rem', fontSize: '0.82rem' }}>
+            Approved
+          </button>
+          <button className="figma-btn-white-outline" style={{ padding: '0.4rem 1rem', fontSize: '0.82rem' }}>
+            Rejected
+          </button>
+        </div>
+
+        {/* Leave Table or Empty State */}
+        {pendingLeaves.length === 0 ? (
+          <div className="figma-empty-state-box" style={{ padding: '3rem 1rem' }}>
+            <div className="empty-state-icon-pill" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+              <CheckCircle2 size={24} />
+            </div>
+            <h4 className="empty-state-title">No leave requests</h4>
+            <p className="empty-state-desc">When employees submit leave requests, they'll appear here.</p>
+          </div>
+        ) : (
+          <div className="emp-table-wrapper">
+            <table className="emp-table">
+              <thead>
+                <tr>
+                  <th>EMPLOYEE</th>
+                  <th>LEAVE TYPE</th>
+                  <th>DATES</th>
+                  <th>DURATION</th>
+                  <th>STATUS</th>
+                  {(role === 'admin' || role === 'hr') && <th>ACTIONS</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {pendingLeaves.map((l) => (
+                  <tr key={l._id}>
+                    <td>
+                      <strong>{l.employeeId?.fullName || 'Employee'}</strong>
+                      <div style={{ fontSize: '0.74rem', color: '#64748b' }}>{l.employeeId?.department}</div>
+                    </td>
+                    <td>{l.leaveType}</td>
+                    <td>{l.startDate} to {l.endDate}</td>
+                    <td>{l.workingDaysCount} working day(s)</td>
+                    <td><span className="pending-pill">Pending Review</span></td>
+                    {(role === 'admin' || role === 'hr') && (
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                          <button
+                            className="emp-btn secondary"
+                            onClick={() => handleReview(l._id, 'reject')}
+                            style={{ padding: '4px 8px', fontSize: '0.78rem' }}
+                          >
+                            Reject
+                          </button>
+                          <button
+                            className="figma-btn-purple"
+                            onClick={() => handleReview(l._id, 'approve')}
+                            style={{ padding: '4px 10px', fontSize: '0.78rem' }}
+                          >
+                            Approve
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <div style={{ marginTop: '1.25rem', color: '#94a3b8', fontSize: '0.8rem' }}>
+          Approvals are based on your configured HR policy
+        </div>
+      </div>
 
       {/* Smart Leave NLP & Application Grid */}
       <div className="leaves-two-col">

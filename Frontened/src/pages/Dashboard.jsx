@@ -1,51 +1,45 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { dashboardService, attendanceService, aiService } from '../services/api';
+import { dashboardService, aiService } from '../services/api';
 import {
-  Users,
-  CalendarCheck,
-  CalendarDays,
-  Clock,
-  TrendingUp,
-  CreditCard,
   Sparkles,
-  AlertTriangle,
+  ArrowRight,
+  Plus,
+  UserPlus,
+  Mail,
+  ChevronRight,
+  Clock,
   CheckCircle2,
-  Filter,
-  UserCheck,
+  AlertCircle,
+  HelpCircle,
+  Send,
+  User,
   Building,
-  BellRing,
-  ArrowUpRight,
-  ShieldAlert,
+  Calendar,
 } from 'lucide-react';
 import './Dashboard.css';
 
 export default function Dashboard({ onOpenAi }) {
-  const { user, role } = useAuth();
+  const { user, role, companyName } = useAuth();
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [selectedDept, setSelectedDept] = useState('All');
-  const [selectedMonth, setSelectedMonth] = useState('');
 
-  // AI Summary state
-  const [aiSummary, setAiSummary] = useState([]);
-  const [isSummarizing, setIsSummarizing] = useState(false);
+  // Embedded AI Assistant state (for Employee view in Figma)
+  const [aiInput, setAiInput] = useState('');
+  const [aiChatLog, setAiChatLog] = useState([]);
+  const [aiLoading, setAiLoading] = useState(false);
 
-  // Check-in action state (for Employee)
-  const [checkInLoading, setCheckInLoading] = useState(false);
-  const [actionMessage, setActionMessage] = useState({ text: '', type: '' });
-
-  const loadDashboardData = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       if (role === 'admin') {
-        const res = await dashboardService.getAdmin({
-          department: selectedDept,
-          month: selectedMonth,
-        });
+        const res = await dashboardService.getAdmin();
         if (res.success) setData(res);
       } else if (role === 'hr') {
-        const res = await dashboardService.getHr({ department: selectedDept });
+        const res = await dashboardService.getHr();
         if (res.success) setData(res);
       } else {
         const res = await dashboardService.getEmployee();
@@ -56,524 +50,433 @@ export default function Dashboard({ onOpenAi }) {
     } finally {
       setLoading(false);
     }
-  }, [role, selectedDept, selectedMonth]);
+  }, [role]);
 
   useEffect(() => {
-    loadDashboardData();
-  }, [loadDashboardData]);
+    loadData();
+  }, [loadData]);
 
-  // AI Summarize feature
-  const handleSummarize = async () => {
-    if (!data?.kpis || isSummarizing) return;
-    setIsSummarizing(true);
+  // Handle embedded AI query in Employee Portal
+  const handleAiSend = async (queryText) => {
+    const text = queryText || aiInput;
+    if (!text.trim() || aiLoading) return;
+
+    const userMsg = { role: 'user', content: text };
+    setAiChatLog((prev) => [...prev, userMsg]);
+    setAiInput('');
+    setAiLoading(true);
+
     try {
-      const res = await aiService.summarize(data.kpis);
+      const res = await aiService.chat(text);
       if (res.success) {
-        setAiSummary(res.bullets || []);
+        setAiChatLog((prev) => [...prev, { role: 'assistant', content: res.reply }]);
+      } else {
+        setAiChatLog((prev) => [...prev, { role: 'assistant', content: res.message || 'Unable to process query.' }]);
       }
     } catch (err) {
-      console.error('Summary error:', err);
+      setAiChatLog((prev) => [...prev, { role: 'assistant', content: err.message || 'AI service error.' }]);
     } finally {
-      setIsSummarizing(false);
+      setAiLoading(false);
     }
   };
 
-  // Employee Check-In / Check-Out
-  const handleCheckIn = async () => {
-    setCheckInLoading(true);
-    setActionMessage({ text: '', type: '' });
-    try {
-      const res = await attendanceService.checkIn({ source: 'web' });
-      setActionMessage({ text: res.message || 'Checked in successfully!', type: 'success' });
-      loadDashboardData();
-    } catch (err) {
-      setActionMessage({ text: err.message || 'Check-in failed.', type: 'error' });
-    } finally {
-      setCheckInLoading(false);
-    }
-  };
-
-  const handleCheckOut = async () => {
-    setCheckInLoading(true);
-    setActionMessage({ text: '', type: '' });
-    try {
-      const res = await attendanceService.checkOut();
-      setActionMessage({ text: res.message || 'Checked out successfully!', type: 'success' });
-      loadDashboardData();
-    } catch (err) {
-      setActionMessage({ text: err.message || 'Check-out failed.', type: 'error' });
-    } finally {
-      setCheckInLoading(false);
-    }
-  };
-
-  if (loading && !data) {
+  if (loading) {
     return (
-      <div className="dash-loading-wrapper">
-        <div className="dash-spinner"></div>
-        <p>Aggregating live organizational data from database...</p>
+      <div className="figma-loading-state">
+        <div className="figma-spinner"></div>
+        <span>Loading workspace data...</span>
       </div>
     );
   }
 
-  return (
-    <div className="dash-container">
-      {/* Top Banner */}
-      <div className="dash-top-banner">
-        <div className="dash-title-group">
-          <h1>Welcome back, {user?.name}</h1>
-          <p className="dash-subtitle">
-            Role: <strong>{role?.toUpperCase()}</strong> &bull; Enterprise Operations & People Management Portal
-          </p>
+  // =========================================================================
+  // VIEW A: ADMIN / HR WORKSPACE (Matches Figma Screen 01: Admin Dashboard)
+  // =========================================================================
+  if (role === 'admin' || role === 'hr') {
+    const totalEmployees = data?.kpis?.totalEmployees || 0;
+    const departmentsCount = data?.kpis?.departmentsCount || data?.departments?.length || 0;
+    const pendingLeaves = data?.kpis?.pendingLeaves || 0;
+    const hrCount = data?.kpis?.hrCount || 1;
+    const recentActivity = data?.recentLogs || data?.recentActivity || [];
+
+    return (
+      <div className="figma-dashboard-view">
+        {/* Page Header */}
+        <div className="figma-page-header">
+          <div>
+            <h1 className="figma-page-title">Company Overview</h1>
+            <p className="figma-page-subtitle">Manage your people and daily HR operations.</p>
+          </div>
+          <span className="figma-role-pill">
+            {role === 'admin' ? 'ADMIN WORKSPACE' : 'HR WORKSPACE'}
+          </span>
         </div>
 
-        {/* Global AI Action & Filters */}
-        <div className="dash-actions-bar">
-          {(role === 'admin' || role === 'hr') && (
-            <>
-              <div className="filter-select-wrapper">
-                <Filter size={14} className="filter-icon" />
-                <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)}>
-                  <option value="All">All Departments</option>
-                  <option value="Engineering">Engineering</option>
-                  <option value="Human Resources">Human Resources</option>
-                  <option value="Operations">Operations</option>
-                </select>
+        {/* Welcome Setup Banner */}
+        <div className="figma-welcome-banner">
+          <div className="welcome-banner-left">
+            <div className="welcome-icon-box">
+              <Sparkles size={20} className="welcome-sparkle" />
+            </div>
+            <div>
+              <h2 className="welcome-title">Welcome to HCM Lite</h2>
+              <p className="welcome-subtitle">
+                Set up your company to start managing people in one place.
+              </p>
+            </div>
+          </div>
+          <Link to="/org-setup" className="figma-btn-purple">
+            Complete setup
+          </Link>
+        </div>
+
+        {/* 4 Metric KPI Cards */}
+        <div className="figma-metrics-grid">
+          {/* 1. Total Employees */}
+          <div className="figma-metric-card">
+            <div className="metric-header">
+              <span className="metric-dot purple"></span>
+              <span className="metric-label">Total employees</span>
+            </div>
+            <div className="metric-value">
+              {totalEmployees > 0 ? totalEmployees : '—'}
+            </div>
+            <div className="metric-subtext">
+              {totalEmployees > 0 ? `${totalEmployees} employee records active` : 'No employee records yet'}
+            </div>
+          </div>
+
+          {/* 2. Departments */}
+          <div className="figma-metric-card">
+            <div className="metric-header">
+              <span className="metric-dot blue"></span>
+              <span className="metric-label">Departments</span>
+            </div>
+            <div className="metric-value">
+              {departmentsCount > 0 ? departmentsCount : '—'}
+            </div>
+            <div className="metric-subtext">
+              {departmentsCount > 0 ? `${departmentsCount} active departments` : 'Set up your structure'}
+            </div>
+          </div>
+
+          {/* 3. Pending Leave Requests */}
+          <div className="figma-metric-card">
+            <div className="metric-header">
+              <span className="metric-dot orange"></span>
+              <span className="metric-label">Pending leave requests</span>
+            </div>
+            <div className="metric-value">
+              {pendingLeaves > 0 ? pendingLeaves : '—'}
+            </div>
+            <div className="metric-subtext">
+              {pendingLeaves > 0 ? `${pendingLeaves} requests awaiting approval` : 'No requests submitted'}
+            </div>
+          </div>
+
+          {/* 4. HR Team Members */}
+          <div className="figma-metric-card">
+            <div className="metric-header">
+              <span className="metric-dot green"></span>
+              <span className="metric-label">HR team members</span>
+            </div>
+            <div className="metric-value">
+              {hrCount > 0 ? hrCount : '—'}
+            </div>
+            <div className="metric-subtext">
+              {hrCount > 0 ? `${hrCount} team manager registered` : 'Invite your HR team'}
+            </div>
+          </div>
+        </div>
+
+        {/* 2-Column Row: Recent Activity & Quick Actions */}
+        <div className="figma-two-col-grid">
+          {/* Left: Recent Activity */}
+          <div className="figma-white-card">
+            <div className="card-header-clean">
+              <div>
+                <h3 className="card-title">Recent activity</h3>
+                <p className="card-subtitle">Updates from your workspace</p>
               </div>
+            </div>
 
-              <button
-                className="dash-summarize-btn"
-                onClick={handleSummarize}
-                disabled={isSummarizing}
-              >
-                <Sparkles size={16} />
-                {isSummarizing ? 'Analyzing...' : 'AI KPI Summary'}
-              </button>
-            </>
-          )}
+            {recentActivity.length === 0 ? (
+              <div className="figma-empty-state-box">
+                <div className="empty-state-icon-pill">
+                  <ArrowRight size={22} className="diagonal-arrow" />
+                </div>
+                <h4 className="empty-state-title">Your activity will appear here</h4>
+                <p className="empty-state-desc">
+                  Once your team starts using HCM Lite, you'll see recent changes here.
+                </p>
+              </div>
+            ) : (
+              <div className="figma-activity-list">
+                {recentActivity.slice(0, 5).map((act, idx) => (
+                  <div key={idx} className="activity-item-row">
+                    <div className="activity-dot-circle"></div>
+                    <div className="activity-content">
+                      <div className="activity-title">{act.description || act.action}</div>
+                      <div className="activity-meta">
+                        {act.actor?.name || 'System'} &bull; {new Date(act.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-          <button className="dash-ai-chat-btn" onClick={onOpenAi}>
-            <Sparkles size={16} /> Ask AI Assistant
-          </button>
+          {/* Right: Quick Actions */}
+          <div className="figma-white-card">
+            <div className="card-header-clean">
+              <div>
+                <h3 className="card-title">Quick actions</h3>
+                <p className="card-subtitle">Get your workspace ready</p>
+              </div>
+            </div>
+
+            <div className="figma-quick-actions-list">
+              <Link to="/org-setup" className="quick-action-row">
+                <div className="action-circle-icon purple">
+                  <Plus size={16} />
+                </div>
+                <div className="action-row-text">
+                  <strong>Set up company</strong>
+                  <span>Add company details</span>
+                </div>
+                <ChevronRight size={16} className="action-chevron" />
+              </Link>
+
+              <Link to="/employees" className="quick-action-row">
+                <div className="action-circle-icon purple">
+                  <UserPlus size={16} />
+                </div>
+                <div className="action-row-text">
+                  <strong>Register employee</strong>
+                  <span>Create an employee record</span>
+                </div>
+                <ChevronRight size={16} className="action-chevron" />
+              </Link>
+
+              <Link to="/org-setup" className="quick-action-row">
+                <div className="action-circle-icon purple">
+                  <Mail size={16} />
+                </div>
+                <div className="action-row-text">
+                  <strong>Invite HR</strong>
+                  <span>Add a team member</span>
+                </div>
+                <ChevronRight size={16} className="action-chevron" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Getting Started Stepper Card */}
+        <div className="figma-white-card figma-getting-started-card">
+          <div className="card-header-clean" style={{ marginBottom: '1.25rem' }}>
+            <div>
+              <h3 className="card-title">Getting started</h3>
+              <p className="card-subtitle">
+                Complete these steps to make HCM Lite work for your organization.
+              </p>
+            </div>
+          </div>
+
+          <div className="figma-stepper-row">
+            <Link to="/org-setup" className="stepper-item">
+              <div className="stepper-number">1</div>
+              <span className="stepper-label">Set up company</span>
+            </Link>
+
+            <Link to="/employees" className="stepper-item">
+              <div className="stepper-number">2</div>
+              <span className="stepper-label">Register employees</span>
+            </Link>
+
+            <Link to="/leaves" className="stepper-item">
+              <div className="stepper-number">3</div>
+              <span className="stepper-label">Configure HR workflows</span>
+            </Link>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      {/* AI Summary Bullets Card (if triggered) */}
-      {aiSummary.length > 0 && (
-        <div className="ai-summary-card">
-          <div className="ai-summary-header">
-            <div className="ai-summary-tag">
-              <Sparkles size={16} />
-              <span>AI Executive Insights (from real DB metrics)</span>
-            </div>
-            <span className="ai-gen-label">AI-generated</span>
-          </div>
-          <div className="ai-bullets-list">
-            {aiSummary.map((b, idx) => (
-              <div key={idx} className="ai-bullet-item">
-                <CheckCircle2 size={16} className="bullet-check" />
-                <span>{b}</span>
-              </div>
-            ))}
-          </div>
+  // =========================================================================
+  // VIEW B: EMPLOYEE PORTAL & AI ASSISTANT (Matches Figma Screen 04)
+  // =========================================================================
+  const leaveBalance = data?.leaveBalance?.annual || data?.stats?.leavesRemaining || '—';
+  const hasProfile = Boolean(data?.employee);
+
+  return (
+    <div className="figma-dashboard-view">
+      {/* Page Header */}
+      <div className="figma-page-header">
+        <div>
+          <h1 className="figma-page-title">My workspace</h1>
+          <p className="figma-page-subtitle">Your HR information and self-service tools.</p>
         </div>
-      )}
+        <span className="figma-role-pill">EMPLOYEE PORTAL</span>
+      </div>
 
-      {/* --- ADMIN DASHBOARD --- */}
-      {role === 'admin' && data && (
-        <div className="admin-dash-view">
-          {/* KPI Cards */}
-          <div className="kpi-grid">
-            <div className="kpi-card">
-              <div className="kpi-icon-box blue">
-                <Users size={22} />
+      {/* 2-Column Layout */}
+      <div className="figma-two-col-grid" style={{ alignItems: 'start' }}>
+        {/* Left Column: Welcome Card + My HR requests */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Welcome Card */}
+          <div className="figma-white-card figma-welcome-emp-card">
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', width: '100%' }}>
+              <div className="emp-avatar-soft-box">
+                <User size={24} className="emp-avatar-icon" />
               </div>
-              <div className="kpi-info">
-                <span className="kpi-label">Active Headcount</span>
-                <span className="kpi-value">{data.kpis?.headcount || 0}</span>
-                <span className="kpi-meta">Filtered by {selectedDept}</span>
-              </div>
-            </div>
-
-            <div className="kpi-card">
-              <div className="kpi-icon-box green">
-                <TrendingUp size={22} />
-              </div>
-              <div className="kpi-info">
-                <span className="kpi-label">Attrition Rate (YTD)</span>
-                <span className="kpi-value">{data.kpis?.attritionRate || '0.0%'}</span>
-                <span className="kpi-meta">Exits &divide; Avg Headcount</span>
-              </div>
-            </div>
-
-            <div className="kpi-card">
-              <div className="kpi-icon-box purple">
-                <CreditCard size={22} />
-              </div>
-              <div className="kpi-info">
-                <span className="kpi-label">Monthly Payroll Cost</span>
-                <span className="kpi-value">
-                  PKR {Number(data.kpis?.payrollCost || 0).toLocaleString()}
-                </span>
-                <span className="kpi-meta">Month: {data.kpis?.activePayrollMonth}</span>
-              </div>
-            </div>
-
-            <div className="kpi-card">
-              <div className="kpi-icon-box orange">
-                <Building size={22} />
-              </div>
-              <div className="kpi-info">
-                <span className="kpi-label">Average Salary</span>
-                <span className="kpi-value">
-                  PKR {Number(data.kpis?.avgSalary || 0).toLocaleString()}
-                </span>
-                <span className="kpi-meta">Per active employee</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Charts & Distributions */}
-          <div className="dash-row-2">
-            {/* Headcount by Dept */}
-            <div className="dash-card">
-              <h3>Headcount by Department</h3>
-              <div className="bar-list">
-                {data.headcountByDept?.length === 0 ? (
-                  <p className="empty-sub">No department data recorded yet.</p>
-                ) : (
-                  data.headcountByDept?.map((d) => (
-                    <div key={d.department} className="bar-row">
-                      <div className="bar-label-group">
-                        <span className="bar-name">{d.department}</span>
-                        <span className="bar-count">{d.count} employee(s)</span>
-                      </div>
-                      <div className="bar-track">
-                        <div
-                          className="bar-fill blue"
-                          style={{
-                            width: `${Math.min(100, (d.count / Math.max(1, data.kpis.headcount)) * 100)}%`,
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Payroll by Dept */}
-            <div className="dash-card">
-              <h3>Payroll Cost by Department</h3>
-              <div className="bar-list">
-                {data.payrollByDept?.length === 0 ? (
-                  <p className="empty-sub">Run monthly payroll to view departmental cost distribution.</p>
-                ) : (
-                  data.payrollByDept?.map((d) => (
-                    <div key={d.department} className="bar-row">
-                      <div className="bar-label-group">
-                        <span className="bar-name">{d.department}</span>
-                        <span className="bar-count">PKR {d.gross?.toLocaleString()}</span>
-                      </div>
-                      <div className="bar-track">
-                        <div
-                          className="bar-fill purple"
-                          style={{
-                            width: `${Math.min(100, (d.gross / Math.max(1, data.kpis.payrollCost)) * 100)}%`,
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Audit Feed */}
-          <div className="dash-card full-width">
-            <div className="card-header-flex">
-              <h3>Immutable Audit Feed (Recent Activity)</h3>
-              <span className="audit-secure-badge">
-                <ShieldAlert size={14} /> Server Verified
-              </span>
-            </div>
-            <div className="table-responsive">
-              <table className="dash-table">
-                <thead>
-                  <tr>
-                    <th>Actor</th>
-                    <th>Role</th>
-                    <th>Action</th>
-                    <th>Entity</th>
-                    <th>Description</th>
-                    <th>Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.auditFeed?.slice(0, 6).map((log) => (
-                    <tr key={log._id}>
-                      <td><strong>{log.actor?.name}</strong></td>
-                      <td><span className={`pill-role ${log.actor?.role}`}>{log.actor?.role}</span></td>
-                      <td><span className="action-tag">{log.action}</span></td>
-                      <td>{log.entity}</td>
-                      <td>{log.description}</td>
-                      <td>{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- HR DASHBOARD --- */}
-      {role === 'hr' && data && (
-        <div className="hr-dash-view">
-          <div className="kpi-grid">
-            <div className="kpi-card">
-              <div className="kpi-icon-box blue"><Users size={22} /></div>
-              <div className="kpi-info">
-                <span className="kpi-label">Total Headcount</span>
-                <span className="kpi-value">{data.kpis?.headcount || 0}</span>
-                <span className="kpi-meta">Active workforce</span>
-              </div>
-            </div>
-
-            <div className="kpi-card">
-              <div className="kpi-icon-box green"><UserCheck size={22} /></div>
-              <div className="kpi-info">
-                <span className="kpi-label">Present Today</span>
-                <span className="kpi-value">{data.kpis?.presentToday || 0}</span>
-                <span className="kpi-meta">Checked-in on time</span>
-              </div>
-            </div>
-
-            <div className="kpi-card">
-              <div className="kpi-icon-box orange"><AlertTriangle size={22} /></div>
-              <div className="kpi-info">
-                <span className="kpi-label">Late Today</span>
-                <span className="kpi-value">{data.kpis?.lateToday || 0}</span>
-                <span className="kpi-meta">After 09:15 AM grace</span>
-              </div>
-            </div>
-
-            <div className="kpi-card">
-              <div className="kpi-icon-box purple"><CalendarDays size={22} /></div>
-              <div className="kpi-info">
-                <span className="kpi-label">On Leave Today</span>
-                <span className="kpi-value">{data.kpis?.onLeaveToday || 0}</span>
-                <span className="kpi-meta">Approved leave requests</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="dash-row-2">
-            {/* Top Late Comers */}
-            <div className="dash-card">
-              <h3>Top Late-Comers This Month</h3>
-              {data.topLateComers?.length === 0 ? (
-                <p className="empty-sub">No repeat late check-ins recorded.</p>
-              ) : (
-                <div className="list-styled">
-                  {data.topLateComers?.map((c, i) => (
-                    <div key={c._id} className="list-item-styled">
-                      <div className="item-rank">#{i + 1}</div>
-                      <div className="item-main">
-                        <span className="item-title">{c.name}</span>
-                        <span className="item-sub">{c.department}</span>
-                      </div>
-                      <span className="late-badge">{c.lateCount} late arrivals</span>
-                    </div>
-                  ))}
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <h3 className="card-title">Welcome to your employee portal</h3>
+                  <span className={`emp-config-badge ${hasProfile ? 'configured' : ''}`}>
+                    {hasProfile ? 'ACTIVE EMPLOYEE' : 'PROFILE NOT CONFIGURED'}
+                  </span>
                 </div>
-              )}
+                <p className="card-subtitle" style={{ margin: '0.35rem 0 1rem' }}>
+                  Your profile details will appear after your account is set up.
+                </p>
+                <Link to="/profile" className="figma-btn-white-outline">
+                  View my profile
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* My HR requests */}
+          <div className="figma-white-card">
+            <div className="card-header-clean">
+              <div>
+                <h3 className="card-title">My HR requests</h3>
+                <p className="card-subtitle">Track requests and updates from your HR team.</p>
+              </div>
             </div>
 
-            {/* Leave by Type */}
-            <div className="dash-card">
-              <h3>Leave Utilization by Type</h3>
-              {data.leaveByType?.length === 0 ? (
-                <p className="empty-sub">No leaves taken this year.</p>
-              ) : (
-                <div className="bar-list">
-                  {data.leaveByType?.map((l) => (
-                    <div key={l.type} className="bar-row">
-                      <div className="bar-label-group">
-                        <span className="bar-name">{l.type} Leave</span>
-                        <span className="bar-count">{l.totalDays} day(s) taken</span>
-                      </div>
-                      <div className="bar-track">
-                        <div
-                          className="bar-fill green"
-                          style={{ width: `${Math.min(100, (l.totalDays / 20) * 100)}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+            <div className="figma-empty-state-box" style={{ padding: '2.5rem 1rem' }}>
+              <div className="empty-state-icon-pill">
+                <Clock size={20} />
+              </div>
+              <h4 className="empty-state-title">Nothing to show yet</h4>
+              <p className="empty-state-desc">Your requests and updates will appear here.</p>
             </div>
           </div>
         </div>
-      )}
 
-      {/* --- EMPLOYEE DASHBOARD --- */}
-      {role === 'employee' && data && (
-        <div className="employee-dash-view">
-          {actionMessage.text && (
-            <div className={`action-banner ${actionMessage.type}`}>
-              {actionMessage.text}
+        {/* Right Column: Leave Balance + HCM AI Assistant */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Leave balance card */}
+          <div className="figma-white-card">
+            <div className="card-header-clean">
+              <div>
+                <h3 className="card-title">Leave balance</h3>
+                <p className="card-subtitle">Your available leave will be shown here.</p>
+              </div>
             </div>
-          )}
 
-          {/* Check-in Widget */}
-          <div className="checkin-hero-card">
-            <div className="checkin-info-col">
-              <span className="hero-tag">ATTENDANCE WORKSTATION</span>
-              <h2>Daily Web Check-In</h2>
-              <p>
-                Standard start is <strong>09:00 AM</strong> with a 15-minute grace window. Check-ins after 09:15 AM are flagged as <strong>Late</strong>.
+            <div className="figma-leave-balance-box">
+              <div className="leave-balance-number">
+                {leaveBalance} <span className="days-unit">days available</span>
+              </div>
+              <p className="leave-balance-policy-note">
+                {hasProfile ? 'Complies with annual leave quota' : 'Leave policy not configured yet'}
               </p>
-              {data.todayAttendance ? (
-                <div className="today-att-status">
-                  <div className="status-pill-badge">
-                    Status: <strong className={`status-${data.todayAttendance.status}`}>{data.todayAttendance.status.toUpperCase()}</strong>
-                  </div>
-                  <div className="timestamp-details">
-                    <span>In: {new Date(data.todayAttendance.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    {data.todayAttendance.checkOut && (
-                      <span> &bull; Out: {new Date(data.todayAttendance.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({data.todayAttendance.workHours} hrs)</span>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <p className="no-att-warning">You have not marked attendance today.</p>
-              )}
             </div>
 
-            <div className="checkin-btn-col">
-              {!data.todayAttendance ? (
-                <button
-                  className="big-check-btn checkin"
-                  onClick={handleCheckIn}
-                  disabled={checkInLoading}
-                >
-                  <Clock size={28} />
-                  <span>{checkInLoading ? 'Stamping Server Time...' : 'CHECK IN NOW'}</span>
-                </button>
-              ) : !data.todayAttendance.checkOut ? (
-                <button
-                  className="big-check-btn checkout"
-                  onClick={handleCheckOut}
-                  disabled={checkInLoading}
-                >
-                  <Clock size={28} />
-                  <span>{checkInLoading ? 'Calculating Hours...' : 'CHECK OUT'}</span>
-                </button>
-              ) : (
-                <div className="completed-day-badge">
-                  <CheckCircle2 size={32} color="#10b981" />
-                  <span>Attendance Completed for Today</span>
-                </div>
-              )}
-            </div>
+            <Link to="/leaves" className="figma-btn-purple w-full text-center">
+              Request leave
+            </Link>
           </div>
 
-          {/* Quick Metrics */}
-          <div className="kpi-grid">
-            <div className="kpi-card">
-              <div className="kpi-icon-box blue"><Clock size={22} /></div>
-              <div className="kpi-info">
-                <span className="kpi-label">Hours This Week</span>
-                <span className="kpi-value">{data.hoursThisWeek || 0} / 40h</span>
-                <span className="kpi-meta">Target: 40 hrs</span>
+          {/* HCM AI Assistant Card (Figma screen 04 dark card) */}
+          <div className="figma-ai-widget-card">
+            <div className="ai-widget-header">
+              <div className="ai-widget-sparkle-box">
+                <Sparkles size={16} />
+              </div>
+              <div>
+                <strong className="ai-widget-title">HCM AI Assistant</strong>
+                <span className="ai-widget-sub">Answers from your HR workspace</span>
               </div>
             </div>
 
-            <div className="kpi-card">
-              <div className="kpi-icon-box orange"><AlertTriangle size={22} /></div>
-              <div className="kpi-info">
-                <span className="kpi-label">Late Count This Month</span>
-                <span className="kpi-value">{data.lateCountThisMonth || 0}</span>
-                <span className="kpi-meta">Penalty: 3 lates = 0.5 day</span>
-              </div>
-            </div>
+            <div className="ai-widget-body">
+              <p className="ai-widget-prompt-text">
+                Ask a question about your HR information.
+              </p>
+              <span className="ai-widget-disclaimer">
+                The assistant will use data you are permitted to access.
+              </span>
 
-            <div className="kpi-card">
-              <div className="kpi-icon-box green"><CalendarDays size={22} /></div>
-              <div className="kpi-info">
-                <span className="kpi-label">Casual Leaves Left</span>
-                <span className="kpi-value">{data.leaveBalances?.Casual?.remaining ?? 10}</span>
-                <span className="kpi-meta">Out of 10 days quota</span>
-              </div>
-            </div>
-
-            <div className="kpi-card">
-              <div className="kpi-icon-box purple"><CalendarDays size={22} /></div>
-              <div className="kpi-info">
-                <span className="kpi-label">Sick Leaves Left</span>
-                <span className="kpi-value">{data.leaveBalances?.Sick?.remaining ?? 8}</span>
-                <span className="kpi-meta">Out of 8 days quota</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Last Payslip & Announcements */}
-          <div className="dash-row-2">
-            <div className="dash-card">
-              <h3>Latest Finalized Payslip</h3>
-              {data.lastPayslip ? (
-                <div className="payslip-snapshot">
-                  <div className="payslip-snapshot-row">
-                    <span>Month:</span>
-                    <strong>{data.lastPayslip.month}</strong>
-                  </div>
-                  <div className="payslip-snapshot-row">
-                    <span>Gross Salary:</span>
-                    <span>PKR {data.lastPayslip.gross?.toLocaleString()}</span>
-                  </div>
-                  <div className="payslip-snapshot-row">
-                    <span>Deductions:</span>
-                    <span className="red">- PKR {data.lastPayslip.totalDeductions?.toLocaleString()}</span>
-                  </div>
-                  <div className="payslip-snapshot-row">
-                    <span>Income Tax:</span>
-                    <span className="red">- PKR {data.lastPayslip.monthlyTax?.toLocaleString()}</span>
-                  </div>
-                  <div className="payslip-snapshot-row total">
-                    <span>Net Take-Home Pay:</span>
-                    <strong className="green">PKR {data.lastPayslip.netPay?.toLocaleString()}</strong>
-                  </div>
-                </div>
-              ) : (
-                <p className="empty-sub">No payslips finalized for your account yet.</p>
-              )}
-            </div>
-
-            <div className="dash-card">
-              <h3>Company Announcements</h3>
-              {data.announcements?.length === 0 ? (
-                <p className="empty-sub">No recent announcements.</p>
-              ) : (
-                <div className="ann-list">
-                  {data.announcements?.map((a) => (
-                    <div key={a._id} className="ann-item">
-                      <div className="ann-item-top">
-                        <span className="ann-title">{a.title}</span>
-                        <span className={`ann-priority ${a.priority}`}>{a.priority}</span>
-                      </div>
-                      <p className="ann-desc">{a.content}</p>
-                      <small className="ann-date">Posted by {a.postedBy} on {new Date(a.createdAt).toLocaleDateString()}</small>
+              {/* Chat Log if any */}
+              {aiChatLog.length > 0 && (
+                <div className="ai-widget-chat-messages">
+                  {aiChatLog.map((m, idx) => (
+                    <div key={idx} className={`ai-mini-msg ${m.role}`}>
+                      {m.content}
                     </div>
                   ))}
                 </div>
               )}
+
+              {/* Quick Prompt Chips */}
+              <div className="ai-widget-chips">
+                <button
+                  type="button"
+                  className="ai-chip-btn"
+                  onClick={() => handleAiSend('What is my leave balance?')}
+                >
+                  What is my leave balance?
+                </button>
+                <button
+                  type="button"
+                  className="ai-chip-btn"
+                  onClick={() => handleAiSend('How do I request time off?')}
+                >
+                  How do I request time off?
+                </button>
+                <button
+                  type="button"
+                  className="ai-chip-btn"
+                  onClick={() => handleAiSend('Where can I view my profile?')}
+                >
+                  Where can I view my profile?
+                </button>
+              </div>
+
+              {/* Input Box */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAiSend();
+                }}
+                className="ai-widget-input-row"
+              >
+                <input
+                  type="text"
+                  placeholder="Type your question..."
+                  value={aiInput}
+                  onChange={(e) => setAiInput(e.target.value)}
+                  disabled={aiLoading}
+                  className="ai-widget-text-input"
+                />
+                <button
+                  type="submit"
+                  disabled={aiLoading || !aiInput.trim()}
+                  className="ai-widget-send-btn"
+                >
+                  <Send size={15} />
+                </button>
+              </form>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

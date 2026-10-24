@@ -182,87 +182,115 @@ export default function Employees() {
 
   return (
     <div className="employees-container">
-      {/* Header */}
-      <div className="emp-header">
+      {/* Page Header (Figma Screen 02) */}
+      <div className="figma-page-header">
         <div>
-          <h1>Employee Directory</h1>
-          <p>Complete lifecycle management, server-side search, Employee 360 profile, and CSV tools.</p>
+          <h1 className="figma-page-title">Employees</h1>
+          <p className="figma-page-subtitle">Build and maintain your organization's employee directory.</p>
         </div>
 
         {(role === 'admin' || role === 'hr') && (
-          <div className="emp-actions">
-            <a href={employeeService.exportCsvUrl()} className="emp-btn secondary">
-              <Download size={16} /> Export CSV
-            </a>
-            <button className="emp-btn secondary" onClick={() => setShowCsvModal(true)}>
-              <FileSpreadsheet size={16} /> Import CSV
+          <div className="emp-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <button className="emp-btn secondary" onClick={() => setShowCsvModal(true)} title="Bulk Import CSV">
+              <FileSpreadsheet size={15} /> Import CSV
             </button>
-            <button className="emp-btn primary" onClick={() => {
-              setRegisterSuccessData(null);
-              setRegisterError('');
-              setShowRegisterModal(true);
-            }}>
-              <UserPlus size={16} /> Register Employee
+            <button
+              className="figma-btn-purple"
+              onClick={() => {
+                setRegisterSuccessData(null);
+                setRegisterError('');
+                setShowRegisterModal(true);
+              }}
+            >
+              <Plus size={16} style={{ marginRight: '4px' }} /> Add employee
             </button>
           </div>
         )}
       </div>
 
-      {/* Controls Bar */}
-      <div className="emp-controls">
-        <div className="search-bar">
-          <Search size={16} className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search by name, employee code, or email..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-          />
+      {/* Main Content White Card */}
+      <div className="figma-white-card" style={{ padding: '1.75rem' }}>
+        <div className="card-header-clean">
+          <div>
+            <h3 className="card-title">Employee directory</h3>
+            <p className="card-subtitle">Employee records created by your HR team will appear here.</p>
+          </div>
         </div>
 
-        <div className="filter-group">
-          <Filter size={16} />
-          <select value={selectedDept} onChange={(e) => {
-            setSelectedDept(e.target.value);
-            setPage(1);
-          }}>
-            <option value="All">All Departments</option>
-            {departments.map((d) => (
-              <option key={d._id} value={d.name}>{d.name}</option>
-            ))}
-          </select>
-        </div>
-      </div>
+        {/* Controls Bar */}
+        <div className="emp-controls" style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div className="search-bar" style={{ flex: 1, minWidth: '260px' }}>
+            <Search size={16} className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by name, email or employee ID"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
 
-      {/* Directory Table */}
-      <div className="emp-table-wrapper">
-        <table className="emp-table">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Employee Name</th>
-              <th>Department</th>
-              <th>Designation</th>
-              <th>Joining Date</th>
-              <th>Status</th>
-              {(role === 'admin' || role === 'hr') && <th>Gross Salary</th>}
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="8" className="table-empty">Loading directory records...</td>
-              </tr>
-            ) : employees.length === 0 ? (
-              <tr>
-                <td colSpan="8" className="table-empty">No employees found. Register an employee to get started.</td>
-              </tr>
-            ) : (
-              employees.map((e) => (
+          <div className="filter-group">
+            <Filter size={15} />
+            <select
+              value={selectedDept}
+              onChange={(e) => {
+                setSelectedDept(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="All">All departments</option>
+              {departments.map((d) => (
+                <option key={d._id} value={d.name}>{d.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Table or Figma Empty State */}
+        {loading ? (
+          <div className="figma-loading-state" style={{ minHeight: '220px' }}>
+            <div className="figma-spinner"></div>
+            <span>Loading directory records...</span>
+          </div>
+        ) : employees.length === 0 ? (
+          <div className="figma-empty-state-box" style={{ padding: '3.5rem 1rem' }}>
+            <div className="empty-state-icon-pill">
+              <User size={24} />
+            </div>
+            <h4 className="empty-state-title">No employees yet</h4>
+            <p className="empty-state-desc" style={{ marginBottom: '1.25rem' }}>
+              Register your first employee to start building the directory.
+            </p>
+            {(role === 'admin' || role === 'hr') && (
+              <button
+                className="figma-btn-purple"
+                onClick={() => {
+                  setRegisterSuccessData(null);
+                  setRegisterError('');
+                  setShowRegisterModal(true);
+                }}
+              >
+                + Register first employee
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="emp-table-wrapper">
+            <table className="emp-table">
+              <thead>
+                <tr>
+                  <th>EMPLOYEE</th>
+                  <th>DEPARTMENT</th>
+                  <th>EMPLOYMENT TYPE</th>
+                  <th>STATUS</th>
+                  <th>ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                {employees.map((e) => (
                 <tr key={e._id}>
                   <td><span className="code-badge">{e.employeeCode}</span></td>
                   <td>
@@ -284,13 +312,16 @@ export default function Employees() {
                     </button>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {/* Register Modal */}
+      <div style={{ marginTop: '1.25rem', color: '#94a3b8', fontSize: '0.8rem' }}>
+        Showing {employees.length} employees &bull; Employee data will appear here after registration.
+      </div>
+    </div>
       {showRegisterModal && (
         <div className="modal-overlay" onClick={() => setShowRegisterModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>

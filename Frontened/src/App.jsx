@@ -3,9 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import PortalLayout from './components/PortalLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import AiAssistantDrawer from './components/AiAssistantDrawer';
-import { Sparkles } from 'lucide-react';
 
 // Pages
 import Home from './pages/Home';
@@ -29,29 +29,25 @@ function AppContent() {
 
   return (
     <>
-      <Navbar onOpenAi={() => setAiDrawerOpen(true)} />
+      {/* If not authenticated, render standard guest navbar */}
+      {!isAuthenticated && <Navbar onOpenAi={() => setAiDrawerOpen(true)} />}
 
-      <main className="main-content">
+      <main className={isAuthenticated ? 'portal-main-wrapper' : 'main-content'}>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/setup" element={<FirstRunSetup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected Routes */}
-          <Route
-            path="/change-password"
-            element={
-              <ProtectedRoute>
-                <ChangePassword />
-              </ProtectedRoute>
-            }
-          />
+          {/* Protected Routes inside Figma Portal Shell */}
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard onOpenAi={() => setAiDrawerOpen(true)} />
+                <PortalLayout onOpenAi={() => setAiDrawerOpen(true)}>
+                  <Dashboard onOpenAi={() => setAiDrawerOpen(true)} />
+                </PortalLayout>
               </ProtectedRoute>
             }
           />
@@ -59,7 +55,9 @@ function AppContent() {
             path="/employees"
             element={
               <ProtectedRoute>
-                <Employees />
+                <PortalLayout onOpenAi={() => setAiDrawerOpen(true)}>
+                  <Employees />
+                </PortalLayout>
               </ProtectedRoute>
             }
           />
@@ -67,7 +65,9 @@ function AppContent() {
             path="/attendance"
             element={
               <ProtectedRoute>
-                <Attendance />
+                <PortalLayout onOpenAi={() => setAiDrawerOpen(true)}>
+                  <Attendance />
+                </PortalLayout>
               </ProtectedRoute>
             }
           />
@@ -75,7 +75,9 @@ function AppContent() {
             path="/leaves"
             element={
               <ProtectedRoute>
-                <Leaves />
+                <PortalLayout onOpenAi={() => setAiDrawerOpen(true)}>
+                  <Leaves />
+                </PortalLayout>
               </ProtectedRoute>
             }
           />
@@ -83,7 +85,9 @@ function AppContent() {
             path="/payroll"
             element={
               <ProtectedRoute>
-                <Payroll />
+                <PortalLayout onOpenAi={() => setAiDrawerOpen(true)}>
+                  <Payroll />
+                </PortalLayout>
               </ProtectedRoute>
             }
           />
@@ -91,7 +95,9 @@ function AppContent() {
             path="/org-setup"
             element={
               <ProtectedRoute>
-                <OrgSetup />
+                <PortalLayout onOpenAi={() => setAiDrawerOpen(true)}>
+                  <OrgSetup />
+                </PortalLayout>
               </ProtectedRoute>
             }
           />
@@ -99,7 +105,9 @@ function AppContent() {
             path="/announcements"
             element={
               <ProtectedRoute>
-                <Announcements />
+                <PortalLayout onOpenAi={() => setAiDrawerOpen(true)}>
+                  <Announcements />
+                </PortalLayout>
               </ProtectedRoute>
             }
           />
@@ -107,7 +115,9 @@ function AppContent() {
             path="/audit-logs"
             element={
               <ProtectedRoute>
-                <AuditLogs />
+                <PortalLayout onOpenAi={() => setAiDrawerOpen(true)}>
+                  <AuditLogs />
+                </PortalLayout>
               </ProtectedRoute>
             }
           />
@@ -115,7 +125,19 @@ function AppContent() {
             path="/profile"
             element={
               <ProtectedRoute>
-                <Profile />
+                <PortalLayout onOpenAi={() => setAiDrawerOpen(true)}>
+                  <Profile />
+                </PortalLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute>
+                <PortalLayout onOpenAi={() => setAiDrawerOpen(true)}>
+                  <ChangePassword />
+                </PortalLayout>
               </ProtectedRoute>
             }
           />
@@ -124,26 +146,14 @@ function AppContent() {
         </Routes>
       </main>
 
-      {/* Floating AI Assistant Trigger */}
-      {isAuthenticated && (
-        <button
-          className="ai-floating-trigger"
-          onClick={() => setAiDrawerOpen(true)}
-          title="Open AI Assistant"
-        >
-          <Sparkles size={22} />
-        </button>
-      )}
+      {!isAuthenticated && <Footer />}
 
-      {/* AI Assistant Slide-out Drawer */}
       <AiAssistantDrawer isOpen={aiDrawerOpen} onClose={() => setAiDrawerOpen(false)} />
-
-      <Footer />
     </>
   );
 }
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
@@ -152,5 +162,3 @@ function App() {
     </BrowserRouter>
   );
 }
-
-export default App;
