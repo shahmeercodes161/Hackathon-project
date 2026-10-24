@@ -35,6 +35,7 @@ export async function apiRequest(endpoint, options = {}) {
 export const setupService = {
   getStatus: () => apiRequest('/setup/status'),
   init: (payload) => apiRequest('/setup/init', { method: 'POST', body: JSON.stringify(payload) }),
+  reset: () => apiRequest('/setup/reset', { method: 'POST' }),
 };
 
 // 2. Auth API

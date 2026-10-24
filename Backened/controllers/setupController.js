@@ -2,6 +2,14 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import OrgSettings from '../models/OrgSettings.js';
 import User from '../models/User.js';
+import Employee from '../models/Employee.js';
+import Attendance from '../models/Attendance.js';
+import LeaveRequest from '../models/LeaveRequest.js';
+import PayrollRun from '../models/PayrollRun.js';
+import Payslip from '../models/Payslip.js';
+import Announcement from '../models/Announcement.js';
+import Notification from '../models/Notification.js';
+import AuditLog from '../models/AuditLog.js';
 import Department from '../models/Department.js';
 import LeaveType from '../models/LeaveType.js';
 import { logAudit } from '../services/auditService.js';
@@ -33,12 +41,19 @@ export const getSetupStatus = async (req, res) => {
 
 export const runInitialSetup = async (req, res) => {
   try {
+    const { forceReset = false } = req.body;
+
     const adminCount = await User.countDocuments({ role: 'admin' });
-    if (adminCount > 0) {
+    if (adminCount > 0 && !forceReset) {
       return res.status(400).json({
         success: false,
-        message: 'System is already configured with an Admin account. Please log in.',
+        message: 'System is already configured with an Admin account. Please log in or choose Reset to start fresh.',
       });
+    }
+
+    if (forceReset) {
+      await User.deleteMany({});
+      await OrgSettings.deleteMany({});
     }
 
     const {
@@ -149,6 +164,35 @@ export const runInitialSetup = async (req, res) => {
     });
   } catch (error) {
     console.error('Setup Controller Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @route   POST /api/setup/reset
+ * @desc    Wipe all operational data back to empty state for fresh judge testing
+ */
+export const resetSystemData = async (req, res) => {
+  try {
+    await Promise.all([
+      User.deleteMany({}),
+      Employee.deleteMany({}),
+      Attendance.deleteMany({}),
+      LeaveRequest.deleteMany({}),
+      PayrollRun.deleteMany({}),
+      Payslip.deleteMany({}),
+      Announcement.deleteMany({}),
+      Notification.deleteMany({}),
+      AuditLog.deleteMany({}),
+      OrgSettings.deleteMany({}),
+    ]);
+
+    res.json({
+      success: true,
+      message: 'System has been successfully reset to an empty state. You can now run the First-Run Setup fresh.',
+    });
+  } catch (error) {
+    console.error('Reset error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

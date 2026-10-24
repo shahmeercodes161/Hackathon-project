@@ -1,13 +1,27 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { setupService } from '../services/api';
-import { Building2, Clock, MapPin, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
+import {
+  Building2,
+  Clock,
+  MapPin,
+  ShieldCheck,
+  ArrowRight,
+  CheckCircle2,
+  AlertCircle,
+  RotateCcw,
+  LogIn,
+} from 'lucide-react';
 import './FirstRunSetup.css';
 
 export default function FirstRunSetup() {
   const navigate = useNavigate();
   const { setSession } = useAuth();
+
+  const [alreadyConfigured, setAlreadyConfigured] = useState(false);
+  const [existingCompany, setExistingCompany] = useState('');
+  const [resetting, setResetting] = useState(false);
 
   const [formData, setFormData] = useState({
     companyName: 'Apex Technologies Corp',
@@ -27,6 +41,44 @@ export default function FirstRunSetup() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    checkStatus();
+  }, []);
+
+  const checkStatus = async () => {
+    try {
+      const res = await setupService.getStatus();
+      if (res.success && res.hasAdmin) {
+        setAlreadyConfigured(true);
+        if (res.companyName) setExistingCompany(res.companyName);
+      } else {
+        setAlreadyConfigured(false);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm('Are you sure you want to reset all data and re-initialize from an empty state?')) {
+      return;
+    }
+    setResetting(true);
+    setError('');
+    try {
+      const res = await setupService.reset();
+      if (res.success) {
+        setAlreadyConfigured(false);
+        setError('');
+        alert('System data has been wiped. You can now run initialization fresh.');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to reset system data');
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,6 +100,9 @@ export default function FirstRunSetup() {
       }
     } catch (err) {
       setError(err.message || 'Failed to complete first-run setup');
+      if (err.message && err.message.toLowerCase().includes('already configured')) {
+        setAlreadyConfigured(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -65,9 +120,51 @@ export default function FirstRunSetup() {
           </p>
         </div>
 
-        {error && <div className="setup-error-banner">{error}</div>}
+        {/* If already configured, show actionable banner */}
+        {alreadyConfigured && (
+          <div
+            className="setup-already-configured-banner"
+            style={{
+              background: 'rgba(99, 102, 241, 0.12)',
+              border: '1px solid rgba(99, 102, 241, 0.35)',
+              borderRadius: '12px',
+              padding: '1.25rem',
+              marginBottom: '1.5rem',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#a5b4fc', marginBottom: '0.4rem' }}>
+              <CheckCircle2 size={20} />
+              <strong style={{ fontSize: '1rem', color: '#fff' }}>
+                System Already Initialized ({existingCompany || 'Active Organization'})
+              </strong>
+            </div>
+            <p style={{ color: '#cbd5e1', fontSize: '0.88rem', margin: '0 0 1rem 0' }}>
+              An Administrator account is already registered in the system. You do not need to re-run setup.
+              You can log in directly, or reset the system if you wish to test fresh initialization.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <Link to="/login" className="btn btn-primary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.88rem' }}>
+                <LogIn size={16} />
+                <span>Go to Sign In</span>
+              </Link>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleReset}
+                disabled={resetting}
+                style={{ padding: '0.5rem 1.25rem', fontSize: '0.88rem', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#fca5a5' }}
+              >
+                <RotateCcw size={16} />
+                <span>{resetting ? 'Resetting...' : 'Reset & Start Fresh'}</span>
+              </button>
+            </div>
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="setup-form">
+        {error && !alreadyConfigured && <div className="setup-error-banner">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="setup-form" style={{ opacity: alreadyConfigured ? 0.6 : 1 }}>
           {/* Section 1: Company Profile */}
           <div className="setup-section">
             <div className="section-title">
@@ -83,6 +180,7 @@ export default function FirstRunSetup() {
                   value={formData.companyName}
                   onChange={handleChange}
                   required
+                  disabled={alreadyConfigured}
                 />
               </div>
               <div className="form-group">
@@ -93,6 +191,7 @@ export default function FirstRunSetup() {
                   value={formData.companyEmail}
                   onChange={handleChange}
                   required
+                  disabled={alreadyConfigured}
                 />
               </div>
             </div>
@@ -113,8 +212,8 @@ export default function FirstRunSetup() {
                   value={formData.officeStart}
                   onChange={handleChange}
                   required
+                  disabled={alreadyConfigured}
                 />
-                <small>Standard: 09:00 AM</small>
               </div>
               <div className="form-group">
                 <label>Grace Period (Minutes)</label>
@@ -123,55 +222,48 @@ export default function FirstRunSetup() {
                   name="graceMinutes"
                   value={formData.graceMinutes}
                   onChange={handleChange}
+                  min="0"
+                  max="60"
                   required
+                  disabled={alreadyConfigured}
                 />
-                <small>Late after 09:15 AM</small>
               </div>
               <div className="form-group">
-                <label>Half-Day Threshold</label>
+                <label>Half-Day Threshold (Hours)</label>
                 <input
                   type="number"
                   name="halfDayHours"
                   value={formData.halfDayHours}
                   onChange={handleChange}
+                  min="1"
+                  max="12"
                   required
+                  disabled={alreadyConfigured}
                 />
-                <small>Under 5 hours</small>
               </div>
             </div>
           </div>
 
-          {/* Section 3: Geofencing Location */}
+          {/* Section 3: Geofence Location */}
           <div className="setup-section">
             <div className="section-title">
               <MapPin size={18} className="section-icon" />
-              <h3>3. Office Location & Geofence (Bonus)</h3>
+              <h3>3. Office Location & Geofence (Attendance Radius)</h3>
             </div>
             <div className="form-grid">
-              <div className="form-group">
-                <label>Office Address / Venue</label>
+              <div className="form-group span-2">
+                <label>Physical Office Address</label>
                 <input
                   type="text"
                   name="officeAddress"
                   value={formData.officeAddress}
                   onChange={handleChange}
                   required
+                  disabled={alreadyConfigured}
                 />
               </div>
               <div className="form-group">
-                <label>Geofence Radius (Meters)</label>
-                <input
-                  type="number"
-                  name="radiusMeters"
-                  value={formData.radiusMeters}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-            <div className="form-grid">
-              <div className="form-group">
-                <label>Office Latitude</label>
+                <label>Latitude (GPS)</label>
                 <input
                   type="number"
                   step="any"
@@ -179,10 +271,11 @@ export default function FirstRunSetup() {
                   value={formData.latitude}
                   onChange={handleChange}
                   required
+                  disabled={alreadyConfigured}
                 />
               </div>
               <div className="form-group">
-                <label>Office Longitude</label>
+                <label>Longitude (GPS)</label>
                 <input
                   type="number"
                   step="any"
@@ -190,19 +283,33 @@ export default function FirstRunSetup() {
                   value={formData.longitude}
                   onChange={handleChange}
                   required
+                  disabled={alreadyConfigured}
+                />
+              </div>
+              <div className="form-group span-2">
+                <label>Allowed Check-In Geofence Radius (Meters)</label>
+                <input
+                  type="number"
+                  name="radiusMeters"
+                  value={formData.radiusMeters}
+                  onChange={handleChange}
+                  min="10"
+                  max="5000"
+                  required
+                  disabled={alreadyConfigured}
                 />
               </div>
             </div>
           </div>
 
-          {/* Section 4: Master Administrator Account */}
+          {/* Section 4: Master Administrator */}
           <div className="setup-section">
             <div className="section-title">
               <ShieldCheck size={18} className="section-icon" />
               <h3>4. Master Administrator Account</h3>
             </div>
-            <div className="form-grid-3">
-              <div className="form-group">
+            <div className="form-grid">
+              <div className="form-group span-2">
                 <label>Admin Full Name</label>
                 <input
                   type="text"
@@ -210,35 +317,47 @@ export default function FirstRunSetup() {
                   value={formData.adminName}
                   onChange={handleChange}
                   required
+                  disabled={alreadyConfigured}
                 />
               </div>
               <div className="form-group">
-                <label>Admin Email (Login)</label>
+                <label>Admin Email Address</label>
                 <input
                   type="email"
                   name="adminEmail"
                   value={formData.adminEmail}
                   onChange={handleChange}
                   required
+                  disabled={alreadyConfigured}
                 />
               </div>
               <div className="form-group">
-                <label>Admin Master Password</label>
+                <label>Admin Password</label>
                 <input
                   type="password"
                   name="adminPassword"
                   value={formData.adminPassword}
                   onChange={handleChange}
                   required
+                  disabled={alreadyConfigured}
                 />
               </div>
             </div>
           </div>
 
-          <button type="submit" className="setup-submit-btn" disabled={loading}>
-            {loading ? 'Initializing System...' : 'Initialize & Launch Company Portal'}
-            <ArrowRight size={18} />
-          </button>
+          <div className="setup-actions">
+            {!alreadyConfigured ? (
+              <button type="submit" className="btn btn-primary setup-submit-btn" disabled={loading}>
+                <span>{loading ? 'Initializing System...' : 'Complete System Initialization'}</span>
+                <ArrowRight size={18} />
+              </button>
+            ) : (
+              <Link to="/login" className="btn btn-primary setup-submit-btn">
+                <span>Go to Sign In</span>
+                <ArrowRight size={18} />
+              </Link>
+            )}
+          </div>
         </form>
       </div>
     </div>
