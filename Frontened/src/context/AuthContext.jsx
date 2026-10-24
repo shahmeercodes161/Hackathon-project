@@ -80,6 +80,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Register function
+  const register = async (payload) => {
+    setError(null);
+    try {
+      const res = await authService.register(payload);
+      if (res.success && res.token) {
+        localStorage.setItem('token', res.token);
+        setToken(res.token);
+        setUser(res.user);
+        return { success: true, user: res.user };
+      }
+      throw new Error(res.message || 'Registration failed');
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    }
+  };
+
   // Direct set session (used after initial onboarding setup)
   const setSession = (newToken, newUser) => {
     localStorage.setItem('token', newToken);
@@ -110,6 +128,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         error,
         login,
+        register,
         logout,
         setSession,
         refreshUser,

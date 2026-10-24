@@ -11,6 +11,125 @@ const generateToken = (id) => {
 };
 
 /**
+ * @route   POST /api/auth/register
+ * @desc    Sign up new user with selected role (admin, hr, employee)
+ */
+export const register = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      password,
+      role = 'employee',
+      department = 'General',
+      designation = 'Staff Member',
+      employeeCode,
+      phone = '',
+      basicSalary = 50000,
+    } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Please provide full name, email, and password.' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const existing = await User.findOne({ email: cleanEmail });
+    if (existing) {
+      return res.status(409).json({ success: false, message: 'An account with this email already exists. Please sign in.' });
+    }
+
+    const allowedRoles = ['admin', 'hr', 'employee'];
+    const assignedRole = allowedRoles.includes(role) ? role : 'employee';
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    let employeeDoc = null;
+
+    // For employee or HR roles, also provision or link an Employee profile so all portal modules work seamlessly
+    if (assignedRole === 'employee' || assignedRole === 'hr') {
+      const code = employeeCode
+        ? employeeCode.toUpperCase().trim()
+        : `EMP-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0] || 'Employee';
+      const lastName = nameParts.slice(1).join(' ') || 'Member';
+
+      const existingCode = await Employee.findOne({ employeeCode: code });
+      const finalCode = existingCode ? `EMP-${Date.now().toString().slice(-4)}` : code;
+
+      const basic = Number(basicSalary) || 50000;
+      employeeDoc = await Employee.create({
+        employeeCode: finalCode,
+        firstName,
+        lastName,
+        fullName: name.trim(),
+        email: cleanEmail,
+        phone: phone || '',
+        department: assignedRole === 'hr' ? (department || 'Human Resources') : (department || 'Engineering'),
+        designation: assignedRole === 'hr' ? (designation || 'HR Specialist') : (designation || 'Associate'),
+        joiningDate: new Date().toISOString().slice(0, 10),
+        status: 'active',
+        salaryStructure: {
+          basic,
+          hra: Math.round(basic * 0.4),
+          medical: Math.round(basic * 0.1),
+          gross: Math.round(basic * 1.5),
+        },
+      });
+    }
+
+    const user = await User.create({
+      name: name.trim(),
+      email: cleanEmail,
+      password: hashedPassword,
+      role: assignedRole,
+      employeeId: employeeDoc ? employeeDoc._id : null,
+      mustChangePassword: false,
+      isActive: true,
+    });
+
+    if (employeeDoc) {
+      employeeDoc.userId = user._id;
+      await employeeDoc.save();
+    }
+
+    const token = generateToken(user._id);
+
+    await logAudit({
+      actor: { id: user._id, name: user.name, email: user.email, role: user.role },
+      action: 'REGISTER',
+      entity: 'User',
+      entityId: user._id,
+      description: `New user registration: ${user.email} as ${user.role.toUpperCase()}`,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Account created successfully!',
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        mustChangePassword: user.mustChangePassword,
+        employeeId: user.employeeId,
+        employee: employeeDoc,
+      },
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error during registration.' });
+  }
+};
+
+/**
  * @route   POST /api/auth/login
  * @desc    Login user, verify password, return JWT & flags
  */

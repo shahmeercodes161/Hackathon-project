@@ -10,6 +10,7 @@ import { Sparkles } from 'lucide-react';
 // Pages
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import FirstRunSetup from './pages/FirstRunSetup';
 import Dashboard from './pages/Dashboard';
 import Employees from './pages/Employees';
@@ -35,6 +36,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/setup" element={<FirstRunSetup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* Protected Routes */}
           <Route

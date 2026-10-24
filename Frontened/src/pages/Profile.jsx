@@ -49,7 +49,7 @@ export default function Profile() {
           </div>
           <div className="profile-main-title">
             <h2>{user?.name}</h2>
-            <span className="profile-sub-role">{emp.designation || user?.role?.toUpperCase()} &bull; {emp.department || 'Saylani HCM'}</span>
+            <span className="profile-sub-role">{emp.designation || user?.role?.toUpperCase()} &bull; {emp.department || 'HCM Enterprise'}</span>
             <span className="profile-code-badge">{emp.employeeCode || 'ADMIN'}</span>
           </div>
         </div>

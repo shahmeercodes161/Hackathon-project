@@ -10,13 +10,13 @@ export default function FirstRunSetup() {
   const { setSession } = useAuth();
 
   const [formData, setFormData] = useState({
-    companyName: 'Saylani Systems Ltd',
-    companyEmail: 'admin@saylani.org',
+    companyName: 'Apex Technologies Corp',
+    companyEmail: 'contact@apexcorp.io',
     officeStart: '09:00',
     officeEnd: '18:00',
     graceMinutes: 15,
     halfDayHours: 5,
-    officeAddress: 'Zaitoon Ashraf IT Park, Karachi',
+    officeAddress: 'Corporate Headquarters, Technology District',
     latitude: 24.8607,
     longitude: 67.0011,
     radiusMeters: 150,

@@ -6,7 +6,7 @@ const orgSettingsSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      default: 'Saylani HCM Inc.',
+      default: 'Enterprise HCM Inc.',
     },
     companyEmail: {
       type: String,

@@ -26,18 +26,17 @@ export default function Home() {
       <section className="hero-section">
         <div className="hero-badge">
           <Sparkles size={16} />
-          <span>Saylani Hackathon 2026 &bull; HCM Lite</span>
+          <span>Next-Generation HCM Cloud &bull; Unified People Operations</span>
         </div>
 
         <h1 className="hero-title">
-          AI-Assisted Human Capital Management <br />
-          <span className="hero-gradient">For Admin, HR, and Employees</span>
+          Intelligent Human Capital Management <br />
+          <span className="hero-gradient">For Enterprise Leadership, HR & Teams</span>
         </h1>
 
         <p className="hero-subtitle">
-          Built completely from scratch with zero pre-loaded data. The system starts empty:
-          Admin sets up company rules, HR registers employees, and an intelligent AI assistant
-          answers real-time queries directly from live operational data.
+          The all-in-one workforce operating system. Manage employee lifecycles, geofenced attendance,
+          smart leave policies, automated tax & payroll, and conversational AI insights in real-time.
         </p>
 
         <div className="hero-actions">
@@ -46,19 +45,17 @@ export default function Home() {
               <span>Open My Dashboard</span>
               <ArrowRight size={18} />
             </Link>
-          ) : !isSetupComplete ? (
-            <Link to="/setup" className="btn btn-primary btn-lg" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
-              <span>🚀 Launch First-Run Setup</span>
-              <ArrowRight size={18} />
-            </Link>
           ) : (
             <>
-              <Link to="/login" className="btn btn-primary btn-lg">
-                <span>Sign In to Portal</span>
+              <Link to="/register" className="btn btn-primary btn-lg">
+                <span>Get Started — Create Account</span>
                 <ArrowRight size={18} />
               </Link>
-              <Link to="/setup" className="btn btn-secondary btn-lg">
-                First-Run Wizard
+              <Link to="/login" className="btn btn-secondary btn-lg">
+                Sign In to Portal
+              </Link>
+              <Link to="/setup" className="btn btn-secondary btn-lg" style={{ opacity: 0.85 }}>
+                Company Onboarding
               </Link>
             </>
           )}

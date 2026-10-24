@@ -125,24 +125,31 @@ export default function Login() {
             type="submit"
             className="btn btn-primary w-full"
             disabled={isSubmitting}
-            style={{ marginTop: '0.75rem', height: '44px' }}
+            style={{ marginTop: '0.75rem', height: '46px', fontSize: '0.96rem' }}
           >
-            {isSubmitting ? 'Verifying Credentials...' : 'Sign In'}
+            {isSubmitting ? 'Verifying Credentials...' : 'Sign In to Enterprise Portal'}
           </button>
         </form>
 
+        <p className="auth-footer-text" style={{ marginTop: '1.25rem' }}>
+          Don't have an enterprise account?{' '}
+          <Link to="/register" className="auth-link">
+            Create an Account
+          </Link>
+        </p>
+
         <div className="judge-demo-box">
-          <span className="judge-demo-label">Judges Demo Quick-Fill:</span>
+          <span className="judge-demo-label">Quick Testing Credentials:</span>
           <div className="judge-pills">
             <button
               type="button"
               className="judge-pill-btn"
               onClick={() => handleQuickFill('admin@hcm.local', 'adminpassword123')}
             >
-              Admin Login
+              Default Admin
             </button>
             <Link to="/setup" className="judge-pill-btn setup">
-              First-Run Wizard
+              Company Onboarding Wizard
             </Link>
           </div>
         </div>

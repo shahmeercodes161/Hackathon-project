@@ -123,7 +123,7 @@ export default function Dashboard({ onOpenAi }) {
         <div className="dash-title-group">
           <h1>Welcome back, {user?.name}</h1>
           <p className="dash-subtitle">
-            Role: <strong>{role?.toUpperCase()}</strong> &bull; Saylani HCM Lite Operational Portal
+            Role: <strong>{role?.toUpperCase()}</strong> &bull; Enterprise Operations & People Management Portal
           </p>
         </div>
 

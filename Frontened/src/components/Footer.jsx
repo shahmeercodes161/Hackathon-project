@@ -13,11 +13,11 @@ export default function Footer() {
           <div className="footer-col brand-col">
             <div className="footer-brand">
               <Sparkles size={18} className="brand-glow-icon" />
-              <span>HCM Lite &bull; Saylani Hackathon</span>
+              <span>HCM Lite &bull; Enterprise People Operations</span>
             </div>
             <p className="footer-desc">
-              AI-assisted Human Capital Management System engineered for Admin, HR, and Employee self-service.
-              Zero dummy data; 100% computed from live operational activity.
+              AI-assisted Human Capital Management platform engineered for corporate leadership, HR teams,
+              and employee self-service. Real-time data, automated payroll, and intelligent workflows.
             </p>
           </div>
 
@@ -25,33 +25,33 @@ export default function Footer() {
           <div className="footer-col">
             <h4 className="footer-heading">Workspaces</h4>
             <ul className="footer-links">
-              <li><Link to="/dashboard">Operational Dashboard</Link></li>
-              <li><Link to="/employees">Employee Directory & 360</Link></li>
-              <li><Link to="/attendance">Attendance Board</Link></li>
-              <li><Link to="/payroll">Payroll Lite Engine</Link></li>
-              <li><Link to="/setup">First-Run Setup Wizard</Link></li>
+              <li><Link to="/dashboard">Executive Dashboard</Link></li>
+              <li><Link to="/employees">Employee Directory & Profiles</Link></li>
+              <li><Link to="/attendance">Attendance & Shift Board</Link></li>
+              <li><Link to="/payroll">Payroll & Tax Engine</Link></li>
+              <li><Link to="/register">Create Enterprise Account</Link></li>
             </ul>
           </div>
 
-          {/* Tech Stack */}
+          {/* Platform Standards */}
           <div className="footer-col">
-            <h4 className="footer-heading">Hackathon Specs</h4>
+            <h4 className="footer-heading">Security & Architecture</h4>
             <ul className="footer-links-static">
-              <li>📍 Zaitoon Ashraf IT Park</li>
-              <li>🤖 Tool-calling AI Assistant (M8)</li>
-              <li>⚡ Strict Server-side RBAC Scope</li>
-              <li>🔒 Immutable Audit Log Trail</li>
+              <li>🛡️ Multi-tier Role Based Access (RBAC)</li>
+              <li>🤖 Autonomous AI Workforce Intelligence</li>
+              <li>📍 GPS Office Geofence Verification</li>
+              <li>🔒 Immutable Cryptographic Audit Logs</li>
             </ul>
           </div>
         </div>
 
         <div className="footer-bottom">
           <p className="footer-copy">
-            &copy; {currentYear} HCM Lite &bull; Built with precision for the Saylani Hackathon.
+            &copy; {currentYear} HCM Lite Enterprise Systems. All rights reserved.
           </p>
           <div className="footer-badge">
             <span className="status-dot"></span>
-            <span>API Server: <strong>http://localhost:5000</strong></span>
+            <span>Enterprise Cloud: <strong>Active & Secure</strong></span>
           </div>
         </div>
       </div>

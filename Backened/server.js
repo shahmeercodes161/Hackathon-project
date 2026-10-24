@@ -32,7 +32,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.get('/', (req, res) => {
   res.json({
     status: 'online',
-    system: 'HCM Lite — Saylani Hackathon API',
+    system: 'HCM Lite — Enterprise Workforce API',
     version: '1.0.0',
     modules: [
       'M1: Auth & Access',

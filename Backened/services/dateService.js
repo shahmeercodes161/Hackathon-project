@@ -5,7 +5,7 @@ export const getOrgSettingsCached = async () => {
   let settings = await OrgSettings.findOne();
   if (!settings) {
     settings = await OrgSettings.create({
-      companyName: 'Saylani HCM Inc.',
+      companyName: 'Enterprise HCM Inc.',
       officeHours: { start: '09:00', end: '18:00', graceMinutes: 15, halfDayHours: 5 },
       weekendDays: ['Saturday', 'Sunday'],
       location: { latitude: 24.8607, longitude: 67.0011, radiusMeters: 150 },

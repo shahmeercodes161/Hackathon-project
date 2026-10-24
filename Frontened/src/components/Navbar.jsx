@@ -120,10 +120,10 @@ export default function Navbar({ onOpenAi }) {
             {role === 'admin' && (
               <>
                 <Link to="/org-setup" className={`hcm-nav-item ${isActive('/org-setup') ? 'active' : ''}`}>
-                  <Settings size={16} /> Org Setup
+                  <Settings size={16} /> Settings
                 </Link>
                 <Link to="/audit-logs" className={`hcm-nav-item ${isActive('/audit-logs') ? 'active' : ''}`}>
-                  <Shield size={16} /> Audit Logs
+                  <Shield size={16} /> Audit Trail
                 </Link>
               </>
             )}
@@ -205,11 +205,14 @@ export default function Navbar({ onOpenAi }) {
             <div className="guest-nav-links">
               {!isSetupComplete && (
                 <Link to="/setup" className="setup-nav-btn">
-                  🚀 First-Run Setup
+                  Onboarding
                 </Link>
               )}
               <Link to="/login" className="login-nav-btn">
                 Sign In
+              </Link>
+              <Link to="/register" className="register-nav-btn">
+                Create Account
               </Link>
             </div>
           )}

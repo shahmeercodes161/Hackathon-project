@@ -228,8 +228,8 @@ export const getPayslip = async (req, res) => {
       success: true,
       payslip,
       company: {
-        name: settings?.companyName || 'Saylani HCM Inc.',
-        address: settings?.location?.address || 'Zaitoon Ashraf IT Park',
+        name: settings?.companyName || 'Enterprise HCM Corp.',
+        address: settings?.location?.address || 'Corporate Headquarters',
       },
     });
   } catch (error) {
