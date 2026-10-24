@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, AlertCircle } from 'lucide-react';
+import { LogIn, AlertCircle, Sparkles, Building2 } from 'lucide-react';
 import './Auth.css';
 
 export default function Login() {
@@ -10,19 +10,22 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState('');
 
-  const { login, isAuthenticated, error, clearError } = useAuth();
+  const { login, isAuthenticated, isSetupComplete, user, error, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   // If already authenticated, redirect
   useEffect(() => {
     if (isAuthenticated) {
-      const origin = location.state?.from?.pathname || '/dashboard';
-      navigate(origin, { replace: true });
+      if (user?.mustChangePassword) {
+        navigate('/change-password', { replace: true });
+      } else {
+        const origin = location.state?.from?.pathname || '/dashboard';
+        navigate(origin, { replace: true });
+      }
     }
-  }, [isAuthenticated, navigate, location]);
+  }, [isAuthenticated, user, navigate, location]);
 
-  // Clear context errors when mounting or switching
   useEffect(() => {
     clearError();
   }, []);
@@ -41,9 +44,18 @@ export default function Login() {
     setIsSubmitting(false);
 
     if (result.success) {
-      const destination = location.state?.from?.pathname || '/dashboard';
-      navigate(destination, { replace: true });
+      if (result.user?.mustChangePassword) {
+        navigate('/change-password', { replace: true });
+      } else {
+        const destination = location.state?.from?.pathname || '/dashboard';
+        navigate(destination, { replace: true });
+      }
     }
+  };
+
+  const handleQuickFill = (fillEmail, fillPass) => {
+    setEmail(fillEmail);
+    setPassword(fillPass);
   };
 
   const displayError = localError || error;
@@ -55,9 +67,20 @@ export default function Login() {
           <div className="auth-icon-badge">
             <LogIn size={26} />
           </div>
-          <h2 className="auth-title">Welcome Back</h2>
-          <p className="auth-subtitle">Sign in to your hackathon account</p>
+          <h2 className="auth-title">HCM Lite Portal</h2>
+          <p className="auth-subtitle">Sign in as Admin, HR, or Employee</p>
         </div>
+
+        {!isSetupComplete && (
+          <div className="setup-banner-prompt">
+            <Building2 size={18} />
+            <div>
+              <strong>Fresh Installation Detected!</strong>
+              <p>System starts empty. Use First-Run Setup to configure company & Admin.</p>
+            </div>
+            <Link to="/setup" className="setup-link-btn">Launch Setup</Link>
+          </div>
+        )}
 
         {displayError && (
           <div className="alert alert-danger">
@@ -69,13 +92,13 @@ export default function Login() {
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label" htmlFor="email">
-              Email Address
+              Corporate Email Address
             </label>
             <input
               id="email"
               type="email"
               className="form-input"
-              placeholder="you@example.com"
+              placeholder="admin@hcm.local or employee email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -104,16 +127,25 @@ export default function Login() {
             disabled={isSubmitting}
             style={{ marginTop: '0.75rem', height: '44px' }}
           >
-            {isSubmitting ? 'Signing in...' : 'Sign In'}
+            {isSubmitting ? 'Verifying Credentials...' : 'Sign In'}
           </button>
         </form>
 
-        <p className="auth-footer-text">
-          Don't have an account yet?
-          <Link to="/register" className="auth-link">
-            Create an account
-          </Link>
-        </p>
+        <div className="judge-demo-box">
+          <span className="judge-demo-label">Judges Demo Quick-Fill:</span>
+          <div className="judge-pills">
+            <button
+              type="button"
+              className="judge-pill-btn"
+              onClick={() => handleQuickFill('admin@hcm.local', 'adminpassword123')}
+            >
+              Admin Login
+            </button>
+            <Link to="/setup" className="judge-pill-btn setup">
+              First-Run Wizard
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

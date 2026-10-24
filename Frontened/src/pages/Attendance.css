@@ -1,0 +1,320 @@
+/* Attendance Page Styling */
+.attendance-page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.att-top-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.5rem;
+  border-radius: 14px;
+}
+
+.att-top-banner h1 {
+  margin: 0 0 0.35rem 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.att-top-banner p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.88rem;
+}
+
+.att-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.att-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.att-btn.primary {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.att-btn.checkout {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.att-btn.camera {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+}
+
+.att-btn.secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+}
+
+.att-btn.success-btn {
+  background: #10b981;
+  color: white;
+}
+
+.att-btn.error-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.att-btn.full {
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+}
+
+.date-filter-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.date-filter-box label {
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
+.date-filter-box input {
+  background: transparent;
+  border: none;
+  color: #f8fafc;
+  font-size: 0.86rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.att-alert-banner {
+  padding: 0.85rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.att-alert-banner.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.att-alert-banner.error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.daily-board-card {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.board-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.board-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #f8fafc;
+}
+
+.total-badge {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  font-size: 0.74rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.att-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.att-table th {
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.85rem 1rem;
+  text-align: left;
+  color: #94a3b8;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.att-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+}
+
+.att-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.source-pill {
+  font-size: 0.72rem;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.source-pill.camera {
+  color: #c084fc;
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.correction-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.correction-pill.pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.correction-pill.approved { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.correction-pill.rejected { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+.review-btn {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.review-btn:hover {
+  background: #f59e0b;
+  color: white;
+}
+
+/* Camera Modal */
+.camera-modal {
+  max-width: 480px;
+  text-align: center;
+}
+
+.camera-viewfinder {
+  height: 240px;
+  background: #020617;
+  border: 2px dashed rgba(99, 102, 241, 0.4);
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.face-bounding-box {
+  width: 140px;
+  height: 170px;
+  border: 2px solid #34d399;
+  border-radius: 20px;
+  position: relative;
+  box-shadow: 0 0 15px rgba(52, 211, 153, 0.3);
+}
+
+.scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #6366f1;
+  box-shadow: 0 0 8px #6366f1;
+  animation: scan 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes scan {
+  from { top: 0; }
+  to { top: 100%; }
+}
+
+.face-tag {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10b981;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.live-camera-feed-text {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  font-size: 0.65rem;
+  color: #ef4444;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.geofence-status-bar {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-align: left;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  margin-bottom: 1.25rem;
+}
+
+.geo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

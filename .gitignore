@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+Backened/node_modules/
+Frontened/node_modules/
+
+# Environment variables
+.env
+*.env
+Backened/.env
+Frontened/.env
+
+# Build output
+Frontened/dist/
+Frontened/build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Cache
+.cache/
+Backened/node_modules/.cache/
