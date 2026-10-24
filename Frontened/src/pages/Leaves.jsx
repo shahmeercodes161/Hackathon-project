@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { leaveService, aiService } from '../services/api';
 import {
@@ -187,7 +188,7 @@ export default function Leaves() {
             </span>
           </div>
           <div className="metric-value" style={{ margin: 0, fontSize: '2rem' }}>
-            {myLeaves.filter(l => l.status === 'approved').length}
+            {leaves.filter(l => l.status === 'approved').length}
           </div>
         </div>
 
@@ -199,7 +200,7 @@ export default function Leaves() {
             </span>
           </div>
           <div className="metric-value" style={{ margin: 0, fontSize: '2rem' }}>
-            {myLeaves.filter(l => l.status === 'rejected').length}
+            {leaves.filter(l => l.status === 'rejected').length}
           </div>
         </div>
       </div>
