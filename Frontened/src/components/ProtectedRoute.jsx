@@ -1,8 +1,9 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { canAccessRoute } from '../utils/roleAccess';
 
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, role } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -15,6 +16,10 @@ export default function ProtectedRoute({ children }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (!canAccessRoute(role, location.pathname)) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;

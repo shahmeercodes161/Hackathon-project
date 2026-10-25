@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { canAccessRoute } from '../utils/roleAccess';
 import {
   Compass,
   Users,
@@ -61,53 +62,65 @@ export default function PortalLayout({ children, onOpenAi }) {
         <div className="figma-nav-section">
           <span className="figma-nav-header">PEOPLE OPERATIONS</span>
           <nav className="figma-nav-list">
-            <Link
-              to="/dashboard"
-              className={`figma-nav-item ${isActive('/dashboard') ? 'active' : ''}`}
-            >
-              <Compass size={18} className="nav-icon" />
-              <span>Overview</span>
-            </Link>
+            {canAccessRoute(role, '/dashboard') && (
+              <Link
+                to="/dashboard"
+                className={`figma-nav-item ${isActive('/dashboard') ? 'active' : ''}`}
+              >
+                <Compass size={18} className="nav-icon" />
+                <span>Overview</span>
+              </Link>
+            )}
 
-            <Link
-              to="/employees"
-              className={`figma-nav-item ${isActive('/employees') ? 'active' : ''}`}
-            >
-              <Users size={18} className="nav-icon" />
-              <span>Employees</span>
-            </Link>
+            {canAccessRoute(role, '/employees') && (
+              <Link
+                to="/employees"
+                className={`figma-nav-item ${isActive('/employees') ? 'active' : ''}`}
+              >
+                <Users size={18} className="nav-icon" />
+                <span>Employees</span>
+              </Link>
+            )}
 
-            <Link
-              to="/leaves"
-              className={`figma-nav-item ${isActive('/leaves') ? 'active' : ''}`}
-            >
-              <CalendarDays size={18} className="nav-icon" />
-              <span>Leave Management</span>
-            </Link>
+            {canAccessRoute(role, '/leaves') && (
+              <Link
+                to="/leaves"
+                className={`figma-nav-item ${isActive('/leaves') ? 'active' : ''}`}
+              >
+                <CalendarDays size={18} className="nav-icon" />
+                <span>Leave Management</span>
+              </Link>
+            )}
 
-            <Link
-              to="/attendance"
-              className={`figma-nav-item ${isActive('/attendance') ? 'active' : ''}`}
-            >
-              <CalendarCheck size={18} className="nav-icon" />
-              <span>Attendance</span>
-            </Link>
+            {canAccessRoute(role, '/attendance') && (
+              <Link
+                to="/attendance"
+                className={`figma-nav-item ${isActive('/attendance') ? 'active' : ''}`}
+              >
+                <CalendarCheck size={18} className="nav-icon" />
+                <span>Attendance</span>
+              </Link>
+            )}
 
-            <Link
-              to="/org-setup"
-              className={`figma-nav-item ${isActive('/org-setup') ? 'active' : ''}`}
-            >
-              <Building size={18} className="nav-icon" />
-              <span>Departments</span>
-            </Link>
+            {role === 'admin' && canAccessRoute(role, '/org-setup') && (
+              <Link
+                to="/org-setup"
+                className={`figma-nav-item ${isActive('/org-setup') ? 'active' : ''}`}
+              >
+                <Building size={18} className="nav-icon" />
+                <span>Departments</span>
+              </Link>
+            )}
 
-            <Link
-              to="/payroll"
-              className={`figma-nav-item ${isActive('/payroll') ? 'active' : ''}`}
-            >
-              <FileBarChart size={18} className="nav-icon" />
-              <span>Reports</span>
-            </Link>
+            {canAccessRoute(role, '/payroll') && (
+              <Link
+                to="/payroll"
+                className={`figma-nav-item ${isActive('/payroll') ? 'active' : ''}`}
+              >
+                <FileBarChart size={18} className="nav-icon" />
+                <span>Reports</span>
+              </Link>
+            )}
 
             <button
               type="button"
@@ -124,15 +137,17 @@ export default function PortalLayout({ children, onOpenAi }) {
         <div className="figma-nav-section">
           <span className="figma-nav-header">WORKSPACE</span>
           <nav className="figma-nav-list">
-            <Link
-              to="/announcements"
-              className={`figma-nav-item ${isActive('/announcements') ? 'active' : ''}`}
-            >
-              <Megaphone size={18} className="nav-icon" />
-              <span>Announcements</span>
-            </Link>
+            {canAccessRoute(role, '/announcements') && (
+              <Link
+                to="/announcements"
+                className={`figma-nav-item ${isActive('/announcements') ? 'active' : ''}`}
+              >
+                <Megaphone size={18} className="nav-icon" />
+                <span>Announcements</span>
+              </Link>
+            )}
 
-            {role === 'admin' && (
+            {role === 'admin' && canAccessRoute(role, '/audit-logs') && (
               <Link
                 to="/audit-logs"
                 className={`figma-nav-item ${isActive('/audit-logs') ? 'active' : ''}`}
@@ -142,13 +157,15 @@ export default function PortalLayout({ children, onOpenAi }) {
               </Link>
             )}
 
-            <Link
-              to="/org-setup"
-              className={`figma-nav-item ${location.pathname === '/org-setup' ? 'active' : ''}`}
-            >
-              <Settings size={18} className="nav-icon" />
-              <span>Settings</span>
-            </Link>
+            {role === 'admin' && canAccessRoute(role, '/org-setup') && (
+              <Link
+                to="/org-setup"
+                className={`figma-nav-item ${location.pathname === '/org-setup' ? 'active' : ''}`}
+              >
+                <Settings size={18} className="nav-icon" />
+                <span>Settings</span>
+              </Link>
+            )}
           </nav>
         </div>
 

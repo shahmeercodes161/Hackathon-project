@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { commsService } from '../services/api';
+import { canAccessRoute } from '../utils/roleAccess';
 import {
   Sparkles,
   Bell,
@@ -91,44 +92,55 @@ export default function Navbar({ onOpenAi }) {
         {/* Navigation Links based on role */}
         {isAuthenticated && (
           <div className="hcm-nav-menu">
-            <Link to="/dashboard" className={`hcm-nav-item ${isActive('/dashboard') ? 'active' : ''}`}>
-              <LayoutDashboard size={16} /> Dashboard
-            </Link>
+            {canAccessRoute(role, '/dashboard') && (
+              <Link to="/dashboard" className={`hcm-nav-item ${isActive('/dashboard') ? 'active' : ''}`}>
+                <LayoutDashboard size={16} /> Dashboard
+              </Link>
+            )}
 
-            {(role === 'admin' || role === 'hr') && (
+            {canAccessRoute(role, '/employees') && (
               <Link to="/employees" className={`hcm-nav-item ${isActive('/employees') ? 'active' : ''}`}>
                 <Users size={16} /> Employees
               </Link>
             )}
 
-            <Link to="/attendance" className={`hcm-nav-item ${isActive('/attendance') ? 'active' : ''}`}>
-              <CalendarCheck size={16} /> Attendance
-            </Link>
-
-            <Link to="/leaves" className={`hcm-nav-item ${isActive('/leaves') ? 'active' : ''}`}>
-              <CalendarDays size={16} /> Leaves
-            </Link>
-
-            <Link to="/payroll" className={`hcm-nav-item ${isActive('/payroll') ? 'active' : ''}`}>
-              <CreditCard size={16} /> Payroll
-            </Link>
-
-            <Link to="/announcements" className={`hcm-nav-item ${isActive('/announcements') ? 'active' : ''}`}>
-              <Megaphone size={16} /> Announcements
-            </Link>
-
-            {role === 'admin' && (
-              <>
-                <Link to="/org-setup" className={`hcm-nav-item ${isActive('/org-setup') ? 'active' : ''}`}>
-                  <Settings size={16} /> Settings
-                </Link>
-                <Link to="/audit-logs" className={`hcm-nav-item ${isActive('/audit-logs') ? 'active' : ''}`}>
-                  <Shield size={16} /> Audit Trail
-                </Link>
-              </>
+            {canAccessRoute(role, '/attendance') && (
+              <Link to="/attendance" className={`hcm-nav-item ${isActive('/attendance') ? 'active' : ''}`}>
+                <CalendarCheck size={16} /> Attendance
+              </Link>
             )}
 
-            {role === 'employee' && (
+            {canAccessRoute(role, '/leaves') && (
+              <Link to="/leaves" className={`hcm-nav-item ${isActive('/leaves') ? 'active' : ''}`}>
+                <CalendarDays size={16} /> Leaves
+              </Link>
+            )}
+
+            {canAccessRoute(role, '/payroll') && (
+              <Link to="/payroll" className={`hcm-nav-item ${isActive('/payroll') ? 'active' : ''}`}>
+                <CreditCard size={16} /> Payroll
+              </Link>
+            )}
+
+            {canAccessRoute(role, '/announcements') && (
+              <Link to="/announcements" className={`hcm-nav-item ${isActive('/announcements') ? 'active' : ''}`}>
+                <Megaphone size={16} /> Announcements
+              </Link>
+            )}
+
+            {role === 'admin' && canAccessRoute(role, '/org-setup') && (
+              <Link to="/org-setup" className={`hcm-nav-item ${isActive('/org-setup') ? 'active' : ''}`}>
+                <Settings size={16} /> Settings
+              </Link>
+            )}
+
+            {role === 'admin' && canAccessRoute(role, '/audit-logs') && (
+              <Link to="/audit-logs" className={`hcm-nav-item ${isActive('/audit-logs') ? 'active' : ''}`}>
+                <Shield size={16} /> Audit Trail
+              </Link>
+            )}
+
+            {canAccessRoute(role, '/profile') && (
               <Link to="/profile" className={`hcm-nav-item ${isActive('/profile') ? 'active' : ''}`}>
                 <UserIcon size={16} /> Profile
               </Link>
