@@ -1,23 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { employeeService } from '../services/api';
-import { User, Phone, MapPin, Building, Briefcase, Mail, CheckCircle2 } from 'lucide-react';
+import { Phone, MapPin, Building, Briefcase, Mail } from 'lucide-react';
 import './Profile.css';
 
 export default function Profile() {
   const { user, refreshUser } = useAuth();
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
+  const [phone, setPhone] = useState(() => user?.employee?.phone || '');
+  const [address, setAddress] = useState(() => user?.employee?.address || '');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (user?.employee) {
-      setPhone(user.employee.phone || '');
-      setAddress(user.employee.address || '');
+      if (user.employee.phone) setPhone(user.employee.phone);
+      if (user.employee.address) setAddress(user.employee.address);
     }
-  }, [user]);
+  }, [user?.employee?.phone, user?.employee?.address]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();

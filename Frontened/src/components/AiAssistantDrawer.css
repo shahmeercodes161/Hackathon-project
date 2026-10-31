@@ -108,7 +108,7 @@
 .ai-quick-label {
   font-size: 0.72rem;
   text-transform: uppercase;
-  color: #64748b;
+  color: #94a3b8;
   font-weight: 700;
   letter-spacing: 0.5px;
   display: block;
@@ -122,21 +122,21 @@
 }
 
 .ai-chip-btn {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
-  padding: 4px 10px;
+  background: #1e293b;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #f1f5f9;
+  padding: 5px 12px;
   border-radius: 14px;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
 }
 
 .ai-chip-btn:hover {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: #6366f1;
-  color: #e0e7ff;
+  background: #312e81;
+  border-color: #818cf8;
+  color: #ffffff;
 }
 
 /* Messages Feed */
@@ -212,24 +212,25 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.7rem;
-  color: #64748b;
+  font-size: 0.72rem;
+  color: #94a3b8;
   padding: 0 4px;
 }
 
 .ai-tag-pill {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(16, 185, 129, 0.2);
   color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  padding: 1px 6px;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  padding: 1px 7px;
   border-radius: 4px;
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 600;
 }
 
 .ai-latency-pill, .ai-tool-pill {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 1px 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  padding: 1px 7px;
   border-radius: 4px;
   display: flex;
   align-items: center;

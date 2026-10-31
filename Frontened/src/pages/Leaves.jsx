@@ -21,6 +21,7 @@ export default function Leaves() {
   const [leaves, setLeaves] = useState([]);
   const [balances, setBalances] = useState({});
   const [pendingLeaves, setPendingLeaves] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('pending'); // 'pending' | 'approved' | 'rejected'
   const [loading, setLoading] = useState(true);
 
   // Smart Leave NLP input
@@ -216,76 +217,111 @@ export default function Leaves() {
 
         {/* Tab Filters */}
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
-          <button className="figma-btn-purple" style={{ padding: '0.4rem 1rem', fontSize: '0.82rem' }}>
-            Pending
+          <button
+            className={statusFilter === 'pending' ? 'figma-btn-purple' : 'figma-btn-white-outline'}
+            onClick={() => setStatusFilter('pending')}
+            style={{ padding: '0.4rem 1rem', fontSize: '0.82rem' }}
+          >
+            Pending ({pendingLeaves.length})
           </button>
-          <button className="figma-btn-white-outline" style={{ padding: '0.4rem 1rem', fontSize: '0.82rem' }}>
-            Approved
+          <button
+            className={statusFilter === 'approved' ? 'figma-btn-purple' : 'figma-btn-white-outline'}
+            onClick={() => setStatusFilter('approved')}
+            style={{ padding: '0.4rem 1rem', fontSize: '0.82rem' }}
+          >
+            Approved ({leaves.filter((l) => l.status === 'approved').length})
           </button>
-          <button className="figma-btn-white-outline" style={{ padding: '0.4rem 1rem', fontSize: '0.82rem' }}>
-            Rejected
+          <button
+            className={statusFilter === 'rejected' ? 'figma-btn-purple' : 'figma-btn-white-outline'}
+            onClick={() => setStatusFilter('rejected')}
+            style={{ padding: '0.4rem 1rem', fontSize: '0.82rem' }}
+          >
+            Rejected ({leaves.filter((l) => l.status === 'rejected').length})
           </button>
         </div>
 
         {/* Leave Table or Empty State */}
-        {pendingLeaves.length === 0 ? (
-          <div className="figma-empty-state-box" style={{ padding: '3rem 1rem' }}>
-            <div className="empty-state-icon-pill" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
-              <CheckCircle2 size={24} />
-            </div>
-            <h4 className="empty-state-title">No leave requests</h4>
-            <p className="empty-state-desc">When employees submit leave requests, they'll appear here.</p>
-          </div>
-        ) : (
-          <div className="emp-table-wrapper">
-            <table className="emp-table">
-              <thead>
-                <tr>
-                  <th>EMPLOYEE</th>
-                  <th>LEAVE TYPE</th>
-                  <th>DATES</th>
-                  <th>DURATION</th>
-                  <th>STATUS</th>
-                  {(role === 'admin' || role === 'hr') && <th>ACTIONS</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {pendingLeaves.map((l) => (
-                  <tr key={l._id}>
-                    <td>
-                      <strong>{l.employeeId?.fullName || 'Employee'}</strong>
-                      <div style={{ fontSize: '0.74rem', color: '#64748b' }}>{l.employeeId?.department}</div>
-                    </td>
-                    <td>{l.leaveType}</td>
-                    <td>{l.startDate} to {l.endDate}</td>
-                    <td>{l.workingDaysCount} working day(s)</td>
-                    <td><span className="pending-pill">Pending Review</span></td>
-                    {(role === 'admin' || role === 'hr') && (
-                      <td>
-                        <div style={{ display: 'flex', gap: '0.4rem' }}>
-                          <button
-                            className="emp-btn secondary"
-                            onClick={() => handleReview(l._id, 'reject')}
-                            style={{ padding: '4px 8px', fontSize: '0.78rem' }}
-                          >
-                            Reject
-                          </button>
-                          <button
-                            className="figma-btn-purple"
-                            onClick={() => handleReview(l._id, 'approve')}
-                            style={{ padding: '4px 10px', fontSize: '0.78rem' }}
-                          >
-                            Approve
-                          </button>
-                        </div>
-                      </td>
-                    )}
+        {(() => {
+          const displayedLeaves =
+            statusFilter === 'pending'
+              ? pendingLeaves
+              : statusFilter === 'approved'
+              ? leaves.filter((l) => l.status === 'approved')
+              : leaves.filter((l) => l.status === 'rejected');
+
+          if (displayedLeaves.length === 0) {
+            return (
+              <div className="figma-empty-state-box" style={{ padding: '3rem 1rem' }}>
+                <div className="empty-state-icon-pill" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+                  <CheckCircle2 size={24} />
+                </div>
+                <h4 className="empty-state-title">No {statusFilter} leave requests</h4>
+                <p className="empty-state-desc">
+                  {statusFilter === 'pending'
+                    ? "When employees submit leave requests, they'll appear here."
+                    : `No leave requests currently marked as ${statusFilter}.`}
+                </p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="emp-table-wrapper">
+              <table className="emp-table">
+                <thead>
+                  <tr>
+                    <th>EMPLOYEE</th>
+                    <th>LEAVE TYPE</th>
+                    <th>DATES</th>
+                    <th>DURATION</th>
+                    <th>STATUS</th>
+                    <th>REASON</th>
+                    {(role === 'admin' || role === 'hr') && statusFilter === 'pending' && <th>ACTIONS</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {displayedLeaves.map((l) => (
+                    <tr key={l._id}>
+                      <td>
+                        <strong>{l.employeeId?.fullName || 'Employee'}</strong>
+                        <div style={{ fontSize: '0.74rem', color: '#64748b' }}>{l.employeeId?.department}</div>
+                      </td>
+                      <td>{l.leaveType}</td>
+                      <td>{l.startDate} to {l.endDate}</td>
+                      <td>{l.workingDaysCount} working day(s)</td>
+                      <td>
+                        <span className={`status-tag status-${l.status}`}>
+                          {l.status === 'pending' ? 'Pending Review' : l.status}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: '0.82rem', color: '#475569' }}>{l.reason || '—'}</td>
+                      {(role === 'admin' || role === 'hr') && statusFilter === 'pending' && (
+                        <td>
+                          <div style={{ display: 'flex', gap: '0.4rem' }}>
+                            <button
+                              className="figma-btn-white-outline"
+                              onClick={() => handleReview(l._id, 'reject')}
+                              style={{ padding: '4px 8px', fontSize: '0.78rem', color: '#dc2626', borderColor: '#fca5a5' }}
+                            >
+                              Reject
+                            </button>
+                            <button
+                              className="figma-btn-purple"
+                              onClick={() => handleReview(l._id, 'approve')}
+                              style={{ padding: '4px 10px', fontSize: '0.78rem' }}
+                            >
+                              Approve
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
 
         <div style={{ marginTop: '1.25rem', color: '#94a3b8', fontSize: '0.8rem' }}>
           Approvals are based on your configured HR policy

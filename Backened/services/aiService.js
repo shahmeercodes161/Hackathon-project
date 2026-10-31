@@ -441,17 +441,43 @@ export const processAiQuery = async ({ prompt, user }) => {
   }
 
   // 6. Own Leave Balance (e.g. "How many sick leaves do I have left this year?")
-  else if (lowerPrompt.includes('how many sick leaves') || lowerPrompt.includes('leave balance') || lowerPrompt.includes('leaves do i have left')) {
+  else if (lowerPrompt.includes('how many sick leaves') || lowerPrompt.includes('leave balance') || lowerPrompt.includes('leaves do i have left') || lowerPrompt.includes('chuttiyan bachi')) {
     toolCalled = 'get_my_leave_balance';
     const data = await getMyLeaveBalance({}, user);
     if (data.balances) {
       responseText = `Here is your current leave balance for ${data.year}:\n• **Sick Leave:** ${data.balances.Sick.remaining} days remaining (Quota: ${data.balances.Sick.quota}, Used: ${data.balances.Sick.used})\n• **Casual Leave:** ${data.balances.Casual.remaining} days remaining (Quota: ${data.balances.Casual.quota}, Used: ${data.balances.Casual.used})\n• **Annual Leave:** ${data.balances.Annual.remaining} days remaining (Quota: ${data.balances.Annual.quota}, Used: ${data.balances.Annual.used})\n• **Unpaid Leave:** ${data.balances.Unpaid.used} days taken (Unlimited)`;
     } else {
-      responseText = data.error || "Unable to retrieve personal leave balance.";
+      responseText = `📋 **Company Standard Leave Quotas:**\n• **Annual Leave:** 14 days\n• **Sick Leave:** 8 days\n• **Casual Leave:** 10 days\n• **Unpaid Leave:** Unlimited\n\n*(Note: You are currently logged in with the **${user.role?.toUpperCase()}** role. Personal quotas apply to registered employee profiles).*`;
     }
   }
 
-  // 7. Payroll Summary
+  // 7. Natural Language Smart Leave Request (English & Roman Urdu)
+  else if (
+    lowerPrompt.includes('off for') ||
+    lowerPrompt.includes('chutti') ||
+    lowerPrompt.includes('wedding') ||
+    lowerPrompt.includes('fever') ||
+    lowerPrompt.includes('need tomorrow off') ||
+    lowerPrompt.includes('need next') ||
+    lowerPrompt.includes('doctor appointment') ||
+    lowerPrompt.includes('kal chutti') ||
+    lowerPrompt.includes('bukhar')
+  ) {
+    toolCalled = 'extract_smart_leave';
+    const parsed = extractSmartLeave(prompt);
+    responseText = `✨ **Smart Leave Extractor:**\nI parsed your leave details from your message:\n• **Classification:** ${parsed.type} Leave\n• **Requested Dates:** ${parsed.startDate} to ${parsed.endDate}\n• **Extracted Reason:** ${parsed.reason}\n\n👉 You can submit this directly in the **Leave Management** section, or use the Smart Leave button on the Leaves page to pre-fill it automatically.`;
+  }
+
+  // 8. Navigation & How-to Questions
+  else if (lowerPrompt.includes('request time off') || lowerPrompt.includes('apply for leave') || lowerPrompt.includes('how to request') || lowerPrompt.includes('how do i request')) {
+    toolCalled = 'how_to_request_leave';
+    responseText = `📝 **How to Request Time Off:**\n1. Click **Leave Management** in the left sidebar (or visit **/leaves**).\n2. Use the **AI Smart Leave Assistant** box to type what you need in plain English or Roman Urdu (e.g., *"Need tomorrow off due to fever"*), then click **Parse & Auto-Fill**.\n3. Verify your dates and click **Submit Leave Application**. Your manager/HR will review it promptly.`;
+  } else if (lowerPrompt.includes('view my profile') || lowerPrompt.includes('my profile') || lowerPrompt.includes('where can i view')) {
+    toolCalled = 'view_profile_info';
+    responseText = `👤 **Viewing Your Profile:**\nYou can access your complete profile details, designation, department, contact information, and role anytime by clicking your avatar in the top-right header and choosing **My Profile**, or directly navigating to **/profile**.`;
+  }
+
+  // 9. Payroll Summary
   else if (lowerPrompt.includes('payroll') || lowerPrompt.includes('gross cost') || lowerPrompt.includes('salary run')) {
     toolCalled = 'get_payroll_summary';
     const data = await getPayrollSummary({}, user);
@@ -462,7 +488,7 @@ export const processAiQuery = async ({ prompt, user }) => {
     }
   }
 
-  // 8. Policy Q&A (Rules from Section 3)
+  // 10. Policy Q&A (Rules from Section 3)
   else if (lowerPrompt.includes('policy') || lowerPrompt.includes('rules') || lowerPrompt.includes('grace') || lowerPrompt.includes('office hours') || lowerPrompt.includes('half day') || lowerPrompt.includes('tax slab')) {
     toolCalled = 'policy_qa';
     responseText = `📋 **HCM Lite Official Company Policy Summary:**\n\n` +
@@ -482,8 +508,8 @@ export const processAiQuery = async ({ prompt, user }) => {
 
   // Log in ai_logs collection
   await AiLog.create({
-    userId: user._id,
-    userRole: user.role,
+    userId: user?._id || null,
+    userRole: user?.role || 'guest',
     endpoint: '/ai/chat',
     prompt,
     toolsUsed: [toolCalled],

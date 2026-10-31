@@ -279,8 +279,14 @@ export const getEmployeeDashboard = async (req, res) => {
       date: { $regex: `^${currentMonth}` },
     });
 
+    // Employee profile
+    const employee = await Employee.findById(employeeId).lean();
+
     // Leave Balances
     const balanceInfo = await getMyLeaveBalance({}, { employeeId });
+
+    // Recent Leave Requests for Employee Portal
+    const myRequests = await LeaveRequest.find({ employeeId }).sort({ createdAt: -1 }).limit(5).lean();
 
     // Last Payslip
     const lastPayslip = await Payslip.findOne({ employeeId }).sort({ month: -1 }).lean();
@@ -290,11 +296,13 @@ export const getEmployeeDashboard = async (req, res) => {
 
     res.json({
       success: true,
+      employee,
       todayAttendance,
       hoursThisWeek: parseFloat(hoursThisWeek.toFixed(1)),
       targetHours: 40,
       lateCountThisMonth: lateCount,
       leaveBalances: balanceInfo.balances,
+      myRequests,
       lastPayslip,
       announcements,
     });

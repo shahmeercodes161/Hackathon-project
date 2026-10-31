@@ -35,6 +35,18 @@ export default function Payroll() {
   // Alert State
   const [alert, setAlert] = useState({ text: '', type: '' });
 
+  // Select a Run to view details
+  const handleSelectRun = useCallback(async (runId) => {
+    try {
+      const res = await payrollService.getRunDetails(runId);
+      if (res.success) {
+        setSelectedRun(res);
+      }
+    } catch (err) {
+      console.error('Run details error:', err);
+    }
+  }, []);
+
   const fetchPayroll = useCallback(async () => {
     setLoading(true);
     try {
@@ -57,23 +69,11 @@ export default function Payroll() {
     } finally {
       setLoading(false);
     }
-  }, [role, selectedRun]);
+  }, [role, selectedRun, handleSelectRun]);
 
   useEffect(() => {
     fetchPayroll();
   }, [fetchPayroll]);
-
-  // Select a Run to view details
-  const handleSelectRun = async (runId) => {
-    try {
-      const res = await payrollService.getRunDetails(runId);
-      if (res.success) {
-        setSelectedRun(res);
-      }
-    } catch (err) {
-      console.error('Run details error:', err);
-    }
-  };
 
   // Run Monthly Payroll Draft (HR/Admin)
   const handleExecuteDraft = async (e) => {

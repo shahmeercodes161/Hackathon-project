@@ -62,9 +62,9 @@
 
 .figma-nav-header {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: #64748b;
+  color: #9ca3af;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 0.65rem;
@@ -81,9 +81,9 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.6rem 0.85rem;
+  padding: 0.65rem 0.85rem;
   border-radius: 8px;
-  color: #94a3b8;
+  color: #d1d5db;
   text-decoration: none;
   font-size: 0.88rem;
   font-weight: 500;
@@ -97,14 +97,15 @@
 }
 
 .figma-nav-item:hover {
-  color: #f1f5f9;
-  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .figma-nav-item.active {
-  background-color: #1e293b; /* Active selection pill from Figma */
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
   color: #ffffff;
   font-weight: 600;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
 }
 
 .figma-nav-item .nav-icon {
@@ -117,8 +118,8 @@
 }
 
 .figma-ai-trigger-nav:hover {
-  color: #e9d5ff;
-  background: rgba(168, 85, 247, 0.12);
+  color: #f3e8ff;
+  background: rgba(168, 85, 247, 0.18);
 }
 
 .figma-ai-trigger-nav .sparkle {
@@ -128,8 +129,8 @@
 /* Bottom Workspace Card */
 .figma-sidebar-bottom-card {
   margin-top: auto;
-  background-color: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background-color: #1f2937;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   padding: 0.85rem 1rem;
 }
@@ -142,8 +143,8 @@
 }
 
 .bottom-card-sub {
-  color: #64748b;
-  font-size: 0.72rem;
+  color: #9ca3af;
+  font-size: 0.74rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -379,4 +380,44 @@
   .figma-content-canvas {
     padding: 1.25rem 1rem;
   }
+}
+
+/* ================= 4. High-Contrast Global Canvas Rules ================= */
+.figma-content-canvas h1,
+.figma-content-canvas h2,
+.figma-content-canvas .figma-page-title,
+.figma-content-canvas .emp-header h1,
+.figma-content-canvas .leaves-header h1,
+.figma-content-canvas .payroll-header h1,
+.figma-content-canvas .ann-page-header h1,
+.figma-content-canvas .audit-header h1,
+.figma-content-canvas .org-setup-header h1 {
+  color: #0f172a !important;
+}
+
+.figma-content-canvas p.subtitle,
+.figma-content-canvas .figma-page-subtitle,
+.figma-content-canvas .emp-header p,
+.figma-content-canvas .leaves-header p,
+.figma-content-canvas .payroll-header p,
+.figma-content-canvas .ann-page-header p,
+.figma-content-canvas .audit-header p,
+.figma-content-canvas .org-setup-header p {
+  color: #64748b !important;
+}
+
+.figma-content-canvas .btn-secondary,
+.figma-content-canvas .emp-btn.secondary,
+.figma-content-canvas .att-btn.secondary {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+.figma-content-canvas .btn-secondary:hover,
+.figma-content-canvas .emp-btn.secondary:hover,
+.figma-content-canvas .att-btn.secondary:hover {
+  background-color: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
 }

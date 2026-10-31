@@ -20,12 +20,12 @@
   margin: 0 0 0.35rem 0;
   font-size: 1.75rem;
   font-weight: 800;
-  color: #f8fafc;
+  color: #0f172a;
 }
 
 .ann-page-header p {
   margin: 0;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 0.88rem;
 }
 
@@ -36,32 +36,36 @@
 }
 
 .ann-card {
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .ann-card:hover {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   transform: translateY(-2px);
 }
 
 .ann-card.priority-urgent {
   border-left: 4px solid #ef4444;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), #1e293b);
+  background: #ffffff;
 }
 
 .ann-card.priority-important {
   border-left: 4px solid #f59e0b;
+  background: #ffffff;
 }
 
 .ann-card.priority-normal {
   border-left: 4px solid #3b82f6;
+  background: #ffffff;
 }
 
 .ann-card-header {
@@ -77,14 +81,14 @@
   border-radius: 4px;
 }
 
-.priority-urgent .ann-priority-pill { background: rgba(239, 68, 68, 0.2); color: #f87171; }
-.priority-important .ann-priority-pill { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-.priority-normal .ann-priority-pill { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.priority-urgent .ann-priority-pill { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
+.priority-important .ann-priority-pill { background: rgba(245, 158, 11, 0.15); color: #b45309; }
+.priority-normal .ann-priority-pill { background: rgba(59, 130, 246, 0.15); color: #2563eb; }
 
 .ann-delete-btn {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: #94a3b8;
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
@@ -92,20 +96,20 @@
 
 .ann-delete-btn:hover {
   color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  background: #fee2e2;
 }
 
 .ann-card-title {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: #0f172a;
 }
 
 .ann-card-content {
   margin: 0;
   font-size: 0.88rem;
-  color: #cbd5e1;
+  color: #334155;
   line-height: 1.5;
   white-space: pre-wrap;
 }
@@ -115,7 +119,7 @@
   justify-content: space-between;
   font-size: 0.76rem;
   color: #64748b;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid #f1f5f9;
   padding-top: 0.75rem;
   margin-top: auto;
 }

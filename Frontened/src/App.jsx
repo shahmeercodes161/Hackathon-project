@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import PortalLayout from './components/PortalLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import AiAssistantDrawer from './components/AiAssistantDrawer';
+import { Sparkles } from 'lucide-react';
 
 // Pages
 import Home from './pages/Home';
@@ -147,6 +148,17 @@ function AppContent() {
       </main>
 
       {!isAuthenticated && <Footer />}
+
+      {isAuthenticated && (
+        <button
+          type="button"
+          className="ai-floating-trigger"
+          onClick={() => setAiDrawerOpen(true)}
+          title="Open HCM AI Assistant"
+        >
+          <Sparkles size={22} />
+        </button>
+      )}
 
       <AiAssistantDrawer isOpen={aiDrawerOpen} onClose={() => setAiDrawerOpen(false)} />
     </>
